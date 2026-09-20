@@ -1,0 +1,81 @@
+Cloud Computing 
+- delivering computing services over the internet 
+- services 
+	- servers, storage locations, databases, networking, software 
+	- analytical services, Business intelligence
+- supports faster innovation 
+- provides access to flexible resources
+- economies of scale / reduction of expenses/higher RoI 
+
+- Pay-As-You-Go pricing model 
+- Helps in
+	- Lower the operating costs 
+	- Scale as the business needs change 
+	- Optimise and run the infrastructure more efficiently 
+
+- Rent Compute power (CPUs) and storage from someone else's data center. 
+
+- deliver new features to the users at record speeds 
+- S/W releases schedules in terms of months/years can be now released in terms of days/weeks 
+
+Advantages 
+- Reliability 
+	-depending on the SLA (Service Level Agreement) - cloud service provide can provide continuous user 			experience without any downtime 
+- Scalability 
+	- Vertical Scaling - add computing capacity by adding more RAM/CPUS to a virtual machine 
+	- Horizontal Scaling - more computing resources - adding more virtual machines 	
+- Elasticity 
+	- configure the applications to always have all the resources they need. 
+- Agility 
+	- resources can be deployed and configured quickly as the application requirements change
+- Disaster Recovery 
+	- provides backup-services, data replications and geo-distribution 
+- Geo-Distribution 
+	- applications and data can be deployed to regional data centers across the globe 
+	- customers always have the best performance in their region
+
+
+Services offered by the IT desk 
+1. Data and the Access - DB, SQL/NoSQL/.... 
+2. Applications - Banking/User Management
+3. Runtime - .NET / JRE / Python /..... 
+4. Operating Systems - Windows/Linux/Mac/.... 
+5. Virtual Machines - HyperV/VirtualBox/VMware/Docker
+6. Computing - CPUs/RAM/..... 
+7. Networking - Switches/Bridges/Routers/Cables/Connectors/...... 
+8. Storage - Disk Spaces/ RAID 
+
+
+On-Premises - private cloud -> 1....8 managed by the Organization 
+Infrastructure as a Service (IaaS) Points 6/7/8 - Computing + Networking + Storage 
+	- Cloud services makes this infrastructure available to the enterprise (cloud tenant). 
+	- the enterprise (tenant) is responsible for keeping the OS/Network configs up to date, 
+	- the CSP - keeps the hardware up to date [ BIOS/newer high speed RAMs/ ]
+	- Azure Virtual Machines 
+
+Platform as a Service (PaaS) - CSP provides 3..8 features. The tenant (enterprise) hires the runtimes/OS/VM/Computing/Network/Storage. The tenant manages the application installation and the databases 
+	- Azure App Services provides managed hosting environment where we can just upload out application and 		start using it. 
+
+Software As a Services (SaaS) - CSP manages (2...8) all aspects of the app environment - VM, N/W, Storage, apps 
+	- tenant provide the data to the apps 
+	- Office 365 - fully functional version of Office that runs in the cloud - we provide the files/content to it- rest everything is taken care of by Office 365 
+	
+Serverless Computing 
+- invisible server that runs an associated task 
+- runs when the task is requested and shuts down when not required. 
+- 
+
+Deployment models 
+1. Public Cloud		-> services offered over the public internal and available to anyone who wants to 				purchase 
+			-> Azure /AWS
+2. Private Cloud	-> Computing resources used exclusively by user from one business organization - 				physically located in the organizations on-site data-center
+3. Hybrid Cloud 	-> combines public and private cloud 
+
+
+
+
+
+
+
+
+

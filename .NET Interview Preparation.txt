@@ -1,0 +1,1511 @@
+.NET Interview Preparation
+.NET Core Interview Series - The DotNet Way
+
+I have over 2 years of experience working with .NET Technologies, including .Net Framework and .Net Core.
+In the last couple of years I have mainly focused on building Scalable Web APIs and Microservices using .NetCore.
+I have been improving myself to write Clean Maintainable code and exploring cloud technologies like Azure.
+I have been working on a Project to build an Application with .Net Core and Angular which gave me Deep Hands-On experience with the Technology, Design and Deployment.
+
+.Net Core supports building a wide-range of applications - including WebAPI, MVC Web Apps, Razor pages, Real-Time apps with SignalR and gRPC Services
+.Net Core Key Advantages - 'Cross-Platform', Performance, Scalability, Built-In Dependency Injection, easy-integration with CI/CD pipeline.
+
+I have been majorly working on .Net8.
+But I have also handled Migration of .Net Framework application to .Net8 and recently migrated .Net8 to .Net10 as well.
+This migration really provided alot of performance improvements and multiple newly added features for development.
+
+Migration majorly has complications with Compatibility Issues with old Libraries, APIs which dont work cross-platform.
+Writing Config files. (.Net upgrade assistance helps)
+
+I have hands-on experience building real-world Scalable Applications, Implementing Clean - Architecture and optimizing performance using EFCore and Caching.
+I understand Deployment Workflows, Security and Unit-Testing.
+
+SDK includes Tools, Templates and Compilers required for Development.
+Runtime is the minimal requirement to run a .NET App.
+Production only requires Runtime, but for development SDKs are needed.
+
+
+What are variable types in .Net - Value Type & Reference Type
+	-> Value Type - Stack Object, Hold Values, (Enums, Struct, int, char)
+		They are commonly stored on the stack when used as local variables.
+	-> Reference Type - Heap Object, Holds Pointers(References) to heap obj, (String, Array, Class, Interface, Pointers, Delegates)
+		However if a value type is a field of a reference type, it lives inside the heap object.
+
+What is Kestrel?
+Kestrel is a "Cross-platform Web Server" used by ASP.Net Core Applications.
+Fast, Light-weight, and can run behind reverse Proxies like IIS or Nginx or directly handle HTPP Traffic.
+(IIS is a WebServer / Host, but only for windows applications - It is primarily used to host applications built on the Microsoft stack, such as ASP.NET)
+
+As a Web Server / Host :- They can receive HTTP/HTTPS requests from users and serve content.  IIS and NGINX are the server that hosts and serve requests.
+			  They also act like a Reverse Proxy as well. A reverse proxy sits in front of your application and forwards requests to the actual application server.
+
+Browser           Internal network
+   |                     |
+   | HTTPS               v
+   +--------> NGINX ----> Node.js, .NET, Java, Python
+                |
+                +------> Another server
+
+			The browser thinks it is communicating with NGINX. NGINX then decides where to send the request.
+
+Kestrel :- ASP .Net Core Web Server
+
+Internet --(HTTPS)--> IIS / NGINX --(HTTP)--> Kestrel ----> ASP.Net Core Application
+
+
+Request Processing Pipeline :-
+Http Request -> MiddleWare Pipeline -> Routing -> Controller -> Action/Method exec -> Result Exec -> Data result(if only APIs) OR View Result (MVC) -> Rendering
+
+
+ASP - Active Server Pages - Microsoft's older server-side web technology for creating dynamic web pages.
+		The browser doesn't receive the ASP code. The server executes it and sends the resulting HTML.
+
+ASP ≠ ASP.NET
+	ASP.NET Core → Modern, cross-platform successor used for MVC, Web API, Razor Pages.
+
+
+CORS - Cross Origin Resource Sharing Policy  (*Browser Security*)  (❌ Backend security ❌ Network security ❌ Authentication)
+	A browser security mechanism that controls or allows a server to specify which origins are permitted to access its resources. Applied on the API (Server) Application.
+	'Same-Origin Policy' (SOP) is a browser security rule that prevents JavaScript from reading data from a different origin.
+	
+		Origin = Scheme + Host + Port   -  https://example.com:443
+						     │        │        │
+						    scheme   host     port
+		
+		Same Origin example  - Frontend: https://app.example.com  && Backend: https://app.example.com/api/users
+		Cross Origin example - Frontend: https://app.example.com && Backend: https://api.example.com/users           -- Cross-origin request. CORS rules apply.
+	
+	*CORS does not block requests from being sent. CORS controls whether the browser allows Client to read the response or not.
+		If Client does not have access, the response will EXIST but the client wont be able to see or access it.
+	
+	Only for Client <-> Server (U2M) calls, Not for Server <-> Server (M2M), as CORS is Browser Security.  (Postman does not enforce browser security policies.)
+	
+	app.UseCors(); - This Middleware actually adds CORS Headers to each Request and Response.  After this Middleware we are supposed to have UseAuthentication(); and UseAuthorization(); in the Request Pipeline.
+	builder.Services.AddCors(options =>
+	{
+		options.AddPolicy("MyPolicy", policy =>
+		{
+			policy
+				.WithOrigins("https://app.example.com")
+				.AllowAnyMethod()
+				.AllowAnyHeader();
+		});
+	});
+
+Why does CORS exist ? -> Imagine you are Logged in to your bank. Now you visit some other website. The browser would send your cookies automatically. Other Website could read all your bank related data.
+	CORS prevents other websites from reading the response.
+	If you have multiple website open on different tabs in your browser, each tab will have access to data and cookies or storage of all the other tabs.
+	
+For allowing CORS, Server adds ->  Access-Control-Allow-Origin: https://app.example.com  - this Header to the HTTP response.
+Now Response would look like  ->  HTTP/1.1 200 OK Access-Control-Allow-Origin: https://app.example.com    (CORS Header)
+									Origin matches. Allow JavaScript access to read the response.
+	Access-Control-Allow-Origin
+	Access-Control-Allow-Methods: GET,POST,PUT,DELETE
+	Access-Control-Allow-Headers: Authorization,Content-Type
+	Access-Control-Allow-Credentials: true           (Cookies with CORS)
+
+Public APIs have -> Access-Control-Allow-Origin: *      ---- Any origin can read this response.
+
+PREFLIGHT + OPTIONS - A Preflight Request is an OPTIONS request sent by the browser before the actual request is sent, To check whether the server permits the intended cross-origin operation.
+	This preliminary request is called a preflight request.
+OPTIONS - These methods generally trigger options  -> method: PUT, DELETE, PATCH  or  Authentication  or  Content-Type: application/json   (Non-simple methods)
+
+Why Preflight ? - Some Operations are potentially dangerous. PUT, PATCH, DELETE. or Authorization.
+
+Simple Request is a request without a PREFILGHT + OPTIONS Request. (No Custom Headers)
+
+Middleware :- It is a component in ASP .Net Core, HTTP Request and Response pipeline.
+	It processes each incoming HTTP request, can handle, modify and forward req to the next Middleware.
+	Middleware is commonly used for Logging, Authentication, Authorization and Error/Exception Handling.
+
+	Configured in the Configure() of Startup.cs
+	app.UseCorsPolicy(), app.UseAuthentication(), app.UseLogging(), app.UseHttpRedirection(), app.UseRouting();
+
+Request Delegates - Actual Fn that Handles/Controls the flow of each Http Request from one middleware to another.     public delegate Task RequestDelegate(HttpContext context);
+	Request Delegate is a function that takes an HttpContext object (which holds the Http Request and Response and returns a Task. 
+When an HTTP request hits your server, .NET wraps the raw request into an HttpContext and passes it to the first Request Delegate.
+
+-> Use() - The Inline/Chaining Delegate - After executing itself, It will execute the next Middleware in the pipeline. eg - app.UseAuthentication, app.UseCorsPolicy
+-> Run() - The Terminal Delegate (LAST) - There is no Middleware execution after this, It is always the Last Execution in the Request Pipeline. eg - app.Run()
+-> Map() - The Branching Delegate - Split the pipeline into branches based on the request's URL path. 
+			If the incoming request matches the path specified, .NET reroutes the request into a completely separate mini-pipeline containing its own set of delegates.
+-> MapWhen(),  UseWhen()
+
+There is a sequence, Each Middleware plays its part on the request and passes it to the next middleware.
+
+HTTP Request -> Middleware1 -> Middleware2 -> Middleware3 -> Endpoint -> Response
+	Then Response travels backward.
+
+Terminal and Non-Terminal Middleware
+	Terminal Middleware does not have await next() in the implementation. It ends the pipeline (app.UseEndpoints(), app.Run())
+	Non-Terminal Middleware calls the next delegate to pass the control to the next Middleware in the pipeline.
+
+Custom Middlewares can be used in another Apps as well.
+	Create Nuget Package of the Custom middleware and add an extension method like public static class.
+	return builder.UseMiddleware<CustomMiddleware>();
+
+	Eurofins we used services.AddTransactionLogServices(configuration)  for the Transaction/Performance Logging.
+
+Always use await _next(); in the Middleware to prevent breaking the middleware pipeline.
+
+Typical production order:  (EHSRCAAC)
+	app.UseExceptionHandler();
+	app.UseHttpsRedirection();
+	app.UseStaticFiles();
+	app.UseRouting();
+	app.UseCors();
+	app.UseAuthentication();
+	app.UseAuthorization();
+	app.MapControllers();
+	
+** HTTP Request ➜ Exception Handling ➜ HTTPS Redirection ➜ Static Files ➜ Routing ➜ CORS ➜ Authentication ➜ Authorization ➜ Rate Limiting / Custom Middleware ➜ Endpoints / Controllers / Minimal APIs ➜ HTTP Response
+
+
+What are all json files available in .Net Application ?
+-> Global.json
+-> LaunchSettings.json - a configuration file used exclusively/strictly for your local development machine. windowsAuthentication, anonymousAuthentication, applicationUrl, sslport
+-> AppSettings.json & AppSettings.development.json
+-> Protect.json and Bundle.json
+
+Default Project Structure of .Net Application :- 
+-> WWWRoot - To store static files (images, json, js, css)
+-> Program.cs - Actual Entry Point of the Application
+-> Startup.cs - Configure Services and required pipelines
+-> AppSettings.json - To store all the Configuration Settings like Connection String, etc. 
+
+Program.cs:- Entry point of any .Net Core Application via Main() method.
+	It registers IIS Integration Server and creates a Host using IWebHostBuilder.
+	It defines and builds Host that runs the App (CreateHostBuilder(till .Net6) & var builder = WebApplication.CreateBuilder(args))
+	Program.cs has UseStartup.cs
+
+.Net6 introduced minimal Hosting model, there is No Startup.cs by default.
+Everything from Service registeration Middleware Setup is done inside the Program.cs.
+But still splitting the logic is a better and clean approach (Maintainable for Large Apps)
+
+StartUp.cs :- Configures Services and Apps Http request Pipeline (Sequence of Middlewares)
+	It contains 2 main methods :-
+	-> ConfigureServices() - To maintain Dependency Injection Setup (Services, Repositories and Controllers)
+	-> Confgure() - To maintain sequence of Middlewares registeration. - Apps Request Handling Pipeline.
+	Configure method specifies how the application responds to each of the HTTP request and response.
+
+Keep service registerations organized using extension methods (ServiceCollectionExtension)
+Avoid Heavy-logic directly in Startup.cs
+Never hardcode Configuration values, always use from Appsettings.json and in appsettings as well use Tokens so the configurations can be changed when required.
+
+
+
+Dependency Injection - It is a Design Pattern that allows objects to recieve their dependencies from an external source, rather than creating them itself.
+
+In .Net core we have Buil-in DI, helps promote Loose Coupling Designs and Maintainable Code.
+
+Services are registered in ConfigureServices using AddSingleton(), AddScoped() and AddTransient(). (In Startup.cs or Program.cs)
+	builder.services.AddSingleton<IMyService, MyService>();    //  If someone asks for IMyService give them an MyService instance
+
+**Framework injects the dependencies automatically only when the Interfaces are declared in the Constructor.
+The Services are injected through contructors where needed.
+
+eg :-	private readonly IMyService _myService;
+		public HomController(IMyService myService){ _myService = myService;}
+
+Now MyService instance is always automatically available whenever the controller is created.
+
+DIP - Dependecy Inversion principle
+
+If there are multiple Implemenatations for 1 Interface, We can use NameServices, keybased factories or IID Injection
+
+*Static Helper Classes can not be injected as they dont have an instance, its better to avoid static classes in DI based.
+	rather than Static Classes create injectable Services with Singleton Lifetime if required globally (Logger).
+
+Object/Service Lifetimes  (How long instance of any class persists)
+	AddSingleton() - One single instance throughout the Application Lifetime, reused everywhere needed (Logging)  -- Lives for entire application lifetime
+	AddScoped() - Each HTTP request creates a new Instance, shared within that req not across.                    -- Lives for HTTP Request Lifetime (Per Request)
+	AddTransient() - Creates Instance every time Service is requested, even within same request.                  -- Lives until nobody references it
+
+IServiceProvider.GetService() is the Service Locator Pattern (Anti-pattern/Mistake)
+Constructor Injection is preferred because it makes dependencies explicit.
+
+Common mistakes which should be avoided, Injecting Singleton Services in Scoped Contructors could lead to errors unless done carefully using Factories.
+
+What happens internally when ASP.NET resolves a dependency?
+
+UserController Constructor
+    └── UserService Constructor
+            └── IEmailService   Service Registeration
+                    └── EmailService
+					
+ASP.NET works from the bottom - upward for creating Instances.
+
+Step 1:- Registeration - Before Application can serve a single request, it needs a blueprint. (Application Startup proces, occurs in Program.cs or Startup.cs inside Service Collection)
+			builder.Services.AddScoped<IEmailService, EmailService>();
+			builder.Services.AddScoped<UserService, IUserService>();
+		At this point .Net does not create the object, Instead .Net creates a ServiceDescriptor object for each entry and adds it to a massive internal list (ServiceCollection).
+		ServiceDescriptor - It has 3 information - Service Type(Interface - IEmailService), Implemenatation Type(Class_Name - EmailService), and Lifetime (Scoped, Transient, Singleton)
+		
+		IEmailService -> EmailService (Scoped)   // If someone asks for IEmailService, create EmailService.
+		IUserService -> UserService (Scoped)      // If someone asks for IUserService, create UserService.
+	At this phase ONLY Instructions are stored, No Instantiation
+
+Step 2 :- Building Service Provider  var app = builder.Build();
+	ServiceCollection -> ServiceProvider   // The provider analyzes all registrations and prepares efficient creation plans.
+	
+Step 3 :- Http Request arrives. UserController is involved.  // Now ASP.NET needs a controller instance.
+
+Step 4 :- DI Container starts examining constructor of Controller -> public UserController(IUserService userService) // UserController requires IUserService
+			So before creating UserController: Need IUserService first
+
+Step5 :- Dependency Tree Construction - Container recursively walks the constructor graph :- UserController -> IUserService -> IEmailService   //DI Container checks until it has classes that require nothing else.
+
+Step 6:- At the bottom, it reaches EmailService (which has no dependency). Now It can finally create EmailService Instance.
+
+Step 7:- Now as it has EmailService, It creates UserService then UserController one-by-one.   Instances are created in the reverse order.
+
+Step 8:- Disposal Tracking - (IDisposable) The container keeps track of disposable objects.
+	Resources are cleaned automatically.
+	
+	Request UserController -> Find registration -> Inspect constructor of Implementation -> Find dependencies -> Resolve dependencies recursively -> Create deepest objects first -> Cache according to lifetime -> Return finished object graph
+
+
+IServiceCollection -> List of ServiceDescriptors -> Build() -> Factories are generated -> IServiceProvider (Root Container) -> Create Scope -> Scoped Container -> Resolve Service
+
+IServiceCollection (builder.services is IServiceCollection) -  A collection where you register all your services.  (MetaData) - List of Service Registerations / ServiceDescriptor.
+				actual	IServiceCollection : IList<ServiceDescriptor>   // List of ServiceDescriptor
+
+ServiceDescriptor - A single Service Registeration. Every call like AddScoped(), AddTransient(), AddSingleton() creates a Service Descriptor.
+		ServiceDescriptor - It has 3 information - Service Type(Interface - IEmailService), Implemenatation Type(Class_Name - EmailService), and Lifetime (Scoped, Transient, Singleton).
+
+IServiceProvider - The object responsible for creating services. ASP .Net Core converts the IServiceCollection into IServiceProvider.
+		IServiceCollection  ->  Build()  -> IServiceProvider 
+	Service Provider = Finds Registeration -> Creates Dependencies -> Creates Object -> Returns Object.
+
+Root Container - The main IServiceProvider created when the application starts. var app = builder.Build(); creates the Root provider 
+		It is like IServiceProvider rootProvider;
+		Application Lifetime
+
+Scoped Container - A child container created from the root container. Because scoped services must be unique per request.
+		Request Timeline
+
+Why can't Scoped service be injected into Singleton?
+	A Singleton lives longer than a Scoped service, so a Singleton cannot safely hold a reference to a Scoped object.
+
+	If We really have to inject Scoped Service in Singleton, Don't inject the Scoped Service directly, instead inject 'IServiceScopeFactory' or 'IServiceProvider' and create a Scope when needed.
+
+	private readonly IServiceScopeFactory _scopeFactory;
+    public ReportService(IServiceScopeFactory scopeFactory) {
+        _scopeFactory = scopeFactory;
+    }
+    public void GenerateReport() {
+        using var scope = _scopeFactory.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    }
+	Singleton -> Temporary Scopes -> Scoped DbContext
+	
+Factory - An Object whose job is to create another Object
+	var service = new EmailService(); // Factory converts to var service = factory.Create();  --  The creation logic is hidden inside the factory.
+	Sometimes the DI container cannot simply create an object using constructor injection.
+	
+	ASP.NET Core uses factories internally all the time.
+		services.AddScoped<IEmailService, EmailService>();    ---- The container effectively builds a factory behind the scenes.
+	Every registration becomes an object-creation factory.
+	
+		services.AddSingleton<IEmailService>(provider =>   -- Here provider => lambda function is literally a factory
+		{
+			return new EmailService(
+				"my-api-key"
+			);
+		});
+	
+	** 'Dependency Injection delivers objects. Factory Pattern creates objects.'
+
+.NET 6 provided Minimal APIs and Perf Imprv
+.Net 7 enhanced APIs and JSON performance
+.Net 8 bring Native AOT Ahead-of-Time compilation, better container support
+	Traditional .NET approach: JIT Just-in-time compilation
+
+Minimal APIs :- Minimal APIs in ASP.NET Core are a lightweight way to build HTTP APIs without using Controllers, MVC conventions, or lots of boilerplate.
+	It is useful for small APIs, microservices, and simple HTTP endpoints.
+	
+	app.MapGet("/api/products", () =>				// Endpoint added directly to the Middleware
+	{
+		return new[] { "Laptop", "Phone" };
+	});
+
+AppSettings.JSON - Default Configuration file in ASP.Net Core.
+	It stores Key Values for configuration data like connection srings, logging levels and env specific settings 
+AppSettings.Development.Json
+	For Local overrides and bind them to strongly typed classes
+
+We inject the IConfiguration interface in our Services or Controller.
+Then we can use GetSection() or GetValue<T>() to read values.
+eg :- var connStr = _configuration.GetConnectionstring("DefaultConnection");
+
+IConfiguration is the main Interface for accessing configuration data. It supports hierarchical data and pull from multiple srcs.
+
+For Logging use Seril logging, For Monitoring use Grafana, Azure Monitor.
+If we are using Kubernetes or Microservices env, We can setup Grafana.
+These tools provide Visual Dashboard, Generate Alerts and allows us to write complex queries to find exactly what went wrong in ms.
+
+How to trace logs across multiple services ?
+	- Correlation IDs 
+	When a request hits our APIs, we generate a GUID (Correlation Id).
+	Pass this Id in the HTTP Header to all the subsequent microsevice involved.
+	Configure Serilog to attach the Correlation Id to every single log entry. 
+	While looking in the Dashboard, Searching for the Correlation ID would give exact journey of the request.
+
+.Net provides Ilogger, Generic Ilogger<T> and ILoggerFactory.
+95% cases use Generic ILogger<T>. T is the class. It automatically Tags all logs from the Class with the ClassName.
+ILoggerFactory - Use only when creating loggers dynamically at runtime.
+ILogger - Use for Static helper methods passing logger down.
+
+Traces - Open Telemetry
+It tells and calculates where the time was spent. Distributed Traces give you a visual waterfall chart of a request.
+It shows you exactly how many ms were spent in API, DB and Service Layer.
+
+Top 3 Pillars for Observability :- 
+1. Logs : What happened (Events/Errors)
+2. Metrics : How much CPU Usage, Memory consumed.
+3. Traces :  Where Time was spent (Waterfall Chart)
+
+Semantic Logging - Assign a specifc Id to specific business event.
+This allows external monitoring tools to generate reports and triger alerts. GRAFANA
+
+Automatically delete logs in some specific period. (15 days)
+
+.Net Framework vs .Net Core
+	.Net Framework is the original Windows only Framework released in early 2000s.
+	Its still used in legacy Applications (WPF, ASP.Net Web Forms)
+
+.Net Core is Cross-Platform, Open Source, desgined for modern scalable Applications.
+	Light-weight, Modular and supports containers, cloud and Microservices.
+	It has improvements in Memory Usage, GC Efficiency.
+	Minimal API and Native AOT takes performance to the next level.
+
+
+Clean Architecture
+	It is a software design approach that separated concerns by organizing code into layers.
+	Typically Domain, Application, DataAccess, Infrastructure.
+	It promotes Testability, Flexibility and Maintainability by decoupling business logic from infrastructure and frameworks.
+
+Domain Layer - It contains core business models and the interfaces.  (Data Access and Repository)
+Application Layer - Use cases are defined, DTOs and Services which have the actual business logic. (Application and Business)
+Infrastructure Layer - It handles the Database, external APIs and other outside Services.
+Presentation Layer - It is the WebAPI or the User Interface which interacts with the end-user.  (Controller)
+App.Application, App.Domain, App.Infrastructure, App.WebAPI.
+
+Dependency Inversion principle - eg - Domain Layer has the Interface IProductRepository and the Infrastructure Layer implements them.
+
+Domain Driven Design - Modeling Business rules and behaviours in the domain layer. 
+	When we start with the business/domain, rather than starting with databases, controllers, APIs, or frameworks.
+	Build the software around the business rules and concepts that matter to the business.
+	Clean Architecture provides structure to implement DDD effectively.
+
+CQRS :- Command Query Responsibility Segregation
+Application layer - It has the Folders of Commands, Queries and Handlers.
+	Commands - modify state, 
+	Queries - fetches the relevant data
+Using MediatR, We can keep Handlers separate and single responsibility.
+
+REST API - Restful APIs - Representational STATE Transfer Application Programming Interface
+	1. Client and Server should always be Independant & Separated (Angular & .NET)
+	2. Stateless - Server should not store anything about the HTTP Request. No STATE Management.
+	3. Uniform Interface - URL should be clear and simple (eg - api/ConsolidatedOverview/OrderListSearch)
+	4. Cacheable - API response should be cacheable (Performance Improvement)
+	5. Layered System - MVC pattern, Controller - Service - Repository (Scalable)
+
+Create ASP .Net Core WebAPI project -> Define Models -> Create Clean Folder Structure and Configure Routing and DI in program.cs
+Attribute Routing ([Route("")]) and keep controllers clean with no logic only service calls.
+[HttpGet("{id}")], [HttpPost]
+
+Always use DTOs for request and responses, Entities should remain internal to the Data layer.
+DTOs are tailored to the API Consumer and can possibly hide few attributes of domain if required.  (Consumer/Client should not be accessible to Domain Structure)
+
+Data Validation
+Data Annotations - [Required], [StringLength], [Range(18, 25)], [EmailAddress] on DTOs
+with Data Annotations, we can define a custom message as well. 
+[Required(ErrorMessage = "Name is mandatory.")]
+For complex Validation use Fluent Validation
+Fluent Validation is used when the validation is complex custom. Its a separate library where we define validator classes and register them in dependecy injection.
+[APIController] - handles Model State validation 
+[HttpGet], [Route] - Handles Http requests and routing.
+
+JWT = Token
+OAuth = Login
+OIDC = Authentication
+
+Authentication - Who are you ? (Username & Password)
+Authorization - What are you allowed to do? (Permissions or Roles)
+
+JWT Token Authentication and Role Based Authorization
+It is a compact self-contained way of transmitting user identity between client and server.
+In ASP.Net core we use JWT as it is stateless authentication.
+
+Token generation typically occurs in a login or authentication method, 
+when a user's credential are verified 
+Start by using the JWTSecurityTokenHandler
+[Authorize(Roles = "Admin")]
+
+Tokens are stored in local storage or session storage.
+It is sent with every API Request via Authentication Header: Bearer Token
+Tokens are short-lived.
+There is a Refresh Token strategy, when token expires user requests for a new access token (Refresh endpoint)
+
+Access Tokens are short lived (15mins). So that if someone steals the tokens, he does not have access for very long.
+But the users access also gets removed after 15 mins. They should not login again and use.
+Refresh Token provides new Access Token. When the User does the Authentication then it returns Access Token + Refresh Token.
+
+JWT itself is neither authentication nor authorization. It is a token format that can carry identity and permission information.
+
+JWT (JSON Web Token) Token based Authentication via UseAddAuthentication(), UseAuthorization().
+For Authorization, we can use Roles and Policies with [Authorize] attr on controllers and Services.   // [Authorize(Permissions.Admin)]
+
+	JWT is STATELESS. JWT is slef-contained so there is no need of Session Storage on Server.
+		The token itself contains the information needed to identify and authenticate the user, along with a signature that allows the server to verify that the token hasn't been tampered with.
+	
+Traditionally Browser sent Username/Password to Server, Server created Sessions, Stores Session in DB. Browser stores Cookie: (SessionId). Every request will have this Cookie: (SessionId).
+If there are multiple servers, Which server has the Session. No Idea. It becomes very complex.
+	Browser -(Username/Password)-> Server, Server creates Session (SessionId: abc123), Stores abc123 -> User in DB. Browser stores Cookie:abc123 and sends this with every req. Then Server looks up for the Session.
+
+JWT solves this issue.
+JWT creates a Self-Contained Token. A compact format for securely transmitting claims.  (eyJhbGciOiJIUzI1Ni...)
+
+JWT has 3 parts: (xxxx.yyyy.zzzz)   (Header.Payload.Signature)
+	-> Header  - 2 parts -> Algorithm Used & Type { "alg": "HS256", "typ": "JWT" }
+	-> Payload - Contains Claims about the User -> { "sub": "123", "name": "John", "role": "Admin" } ->  Subject/UserId, UserName, Email, Expiration, IssuedAt, Role
+	-> Signature - Generated using Encoded Header + Encoded Payload + Secret Key (It takes the algorithm specified in Header and takes Header,Payload and Secret key and Signs it).
+	
+	If Payload changes (someone tampers values), Signature won't match, Server rejects the Token.
+	
+	JWT is usually encoded, not encrypted.  ( Encoding = changing the representation of data. Encryption = hiding the data using a secret/key. )
+	Anyone can decode the Header & Payload. But they cannot modify it without breaking the signature.
+	
+User Logs In -- (Username/Password)--> Server Validates the Credentials --> Server creates JWT --> Returns the Token --> Client Stores the Token 
+Requests will have Authorization Header Bearer ey.....
+Whoever has the Token, can access. Possession grants Access.
+
+Access Token - Short lifetime (15 min).
+Refresh Token - Long lifetime (30 days).  -> Used to obtain new Access Tokens, When the Access Token expires, Client sends POST Refresh API and receives a new Access token.
+
+	builder.Services
+		.AddAuthentication()
+		.AddJwtBearer(options =>
+		{
+			options.TokenValidationParameters =
+				new TokenValidationParameters
+				{
+					ValidateIssuer = true,
+					ValidateAudience = true,
+					ValidateLifetime = true
+				};
+		});
+
+OAuth: Authorization   - OAuth is an authorization framework.  (Any Application needs access to Google Drive(any third application access),
+		We can not share our Google Password with the Application, Instead Google provides Access Token to the APP if User Allows.
+			(So that Application does not get to know the Password)). It does not have Identity or any information of the User only a token for access.
+
+OIDC: Authentication - OpenID Connect is an identity layer built on top of OAuth 2.0 that provides authentication. This includes the Identity of the User. Who is the User loggedIn.
+
+OAuth Authorization Code Flow - User Clicks Login with Google -> Redirect: Client > Google Login -> User Authenticates -> Google Asks Allow App to access profile -> User Approves -> Google return Authorization Code (Access Token) -> Client exchanges code for Access Tokens -> Client has Access to Google APIs.
+OAuth only provides access token to the application. A way to get permission to access somebody else's resources without knowing their password.
+
+OAuth Scopes - Scopes Limit Permissions (read_profile, read_email, read_drive). OAuth Scopes are used to Grant minimum permissions (Only what is required).
+
+OIDC - Open ID Connect - This is an Identity Layer built on top of OAuth 2.0 that provides Authentication.  (OAuth + Identity Information)
+
+Why OIDC ? - OAuth only tells What access is to be given to the Application. App does not know Who the User is ? OIDC solves this issue, It adds Identity with the Access Token.
+ 
+OAuth tells App can access API, OIDC adds Identity. OIDC adds Identity Token (Access Token + Identity Token(JWT)).
+When we click Continue with Google we are actually using OIDC.
+OIDC extends OAuth by adding authentication and identity information through an ID token.
+
+OAuth 2.0 is an authorization framework used to grant an application limited access to a user's resources without sharing credentials.
+OIDC (OpenID Connect) is an authentication layer built on top of OAuth 2.0 that adds identity information through an ID Token.
+OAuth answers "What can the application access?" while OIDC answers "Who is the user?"
+
+Why not use OAuth Access tokens for Identity ? (As OAuth Token can have User Information)  
+	Earlier OAuth was used for Access and Identity as well. But it got very messy as the format was not standardized. Every provider did it differently.
+	OIDC standardized the Process, Endpoint and Format.
+	Because access tokens are intended for: Resource Servers (APIs)
+	while ID tokens are intended for: Client Applications            (They are intended for different Audiences)
+		Access Token -> Google Drive API
+		ID Token -> Your Application
+	
+Scenario 1 :- Traditional Login - Imagine If a website has its own LogIn. User enters his Credentials. Website checks its Database, Validates the User from User Table.
+		NO OIDC. NO GOOGLE NOTHING.  INDEPENDANT LOGIN.
+				If the User is already logged in using Applications LogIn, Googles ID Token is of no Use and not required at all.
+Scenario 2 :- Login Using Google, etc.. - Website does not has it's own Login Functionality. It TRUSTS GOOGLE. Application May or May not have seen User before.
+				User Clicks Continue with Google, Google handles Username, Password, MFA, Security checks and Validates the User. After Successful Login to Google, Google 					sends ID Token to the Application.
+				Now Application knows User is John.
+				Google is the 'Identity Provider'.
+				The application didn't authenticate the user. Google did. The application is trusting Google's authentication.
+	*Scenario 2 is essentially what 'OIDC' provides. 	OIDC is primarily useful: at login time to establish identity.
+
+Scenario 3 :-	If the Website/Application needs to access Google Photos/Drive, Application would need access/permission to Google Photos/Drive APIs.
+				User --> Approves access via Google  --> Google Issues Access Token --> Application receives and It can now call Google Drive API/Google Photos API
+		Authorization - OAuth
+
+Now in recent times, whenever we use Continue with Google, Google validates and sends both ID Token + Access Token. So basically we use OIDC everywhere, which is internally built on top of OAuth.
+
+
+ADO .Net :- ADO.NET is a low-level data-access technology in .NET. It lets your C# application communicate directly with a database.
+	SqlConnection, SqlCommand, SqlDataReader - reads query results
+
+EF Core is a higher-level abstraction that uses .NET's underlying database connectivity mechanisms, including ADO.NET providers.
+
+Server -> Entity Framework Core -> ADO.Net -> SQL Server -> Database
+
+Entity Framework Core - It is an open-source, light-weight and cross-platform ORM for .NET.  (Object Relational Mapper)  ORM - Object Relational Mapping.
+	It allows us to interact with Database using C# classes/objects instead of raw SQL, making Code more readable and maintainable.
+	EF Core acts as a bridge between your C# objects and the relational database, allowing you to perform database operations using C# instead of writing SQL for every operation.
+
+	EF Core translates this C# expression into SQL.
+		var employees = await context.Employees.ToListAsync();	 // Employees is a C# class based on SQL Table Columns.	     This statement converts to "SELECT * FROM Employees"
+	
+	EF Core translates the LINQ query into the appropriate SQL.
+		var employees = await context.Employees.Where(e => e.Salary > 55000).ToListAsync();  	// SELECT * FROM Employees WHERE Salary > 55000;
+
+
+Code - First Approach :- We define Entities and relationship in C# classes and based on that EF Core generates the database schema and Tables.
+Schema changes are managed by migrations.
+
+Migration Process:-   Migrations are a way to keep your database schema synchronized with changes you make to your C# entity/model classes.
+			Migration records the database change required to bring the database from the old schema to the new schema.
+
+dotnet ef migrations add initialCreate - It creates migration files based on our model.
+Then we apply .Net ef database update, it updates the DB Schema accordingly.
+
+DbContext - It is the central class that manages DB connections, tracks all the changes and executes the actual queries.
+It expposes DBSet properties for each entity and supports LINQ Queries and transactions.
+
+EF Core has 3 main way to load related data
+1. Eager Loading - using .Include() so the related data is fetched immediately along with main entity.
+
+2. Lazy Loading - Related data is fetched only when it is actually accessed, it requires proxies and setup.
+
+3. Explicit Loading - Manually loading related collection by .Entry().Collection().Load()
+
+Include() :- 
+	public class Employee					// Employee Class with related Department class data
+	{
+		public int Id { get; set; }
+		public string Name { get; set; }
+		public int DepartmentId { get; set; }
+		public Department Department { get; set; }
+	}
+	
+	var employees = await context.Employees.ToListAsync();								// EF Core loads the Employee data, but the related Department may not be loaded.
+	var employees = await context.Employees.Include(e => e.Department).ToListAsync();	// Explicitly ask EF Core to load related Department data.
+
+
+Change Tracking :- It keeps a track of what entities it loaded and detect what changed so it can generate the correct SQL statements when you call SaveChanges().
+	Drives the changes when SaveChanges() is called.
+
+These are the Entity States - 
+-> Tracked - By Default when an Entity is fetched it is Tracked. EF remembers it.
+		var employee = context.Employees.First();
+-> Detached - Entity is not being tracked. EF ignores it.  (AsNoTracking())   -- When Data only needs to be displayed and not updated (Only Read Queries), No Intentions of SaveChanges()
+		var employee = context.Employees.AsNoTracking().First();       		  -- Now EF does NOT track. No Change Tracker Entry
+			** Memory usage is lower. Performance is better.
+-> Added - New Entity is added to the Content.  - context.Employees.Add(employee); 
+		Meaning Insert this row  - INSERT INTO Employees(...)
+-> Unchanged - Loaded from database.  - var employee = context.Employees.First();
+		Row has No Changes
+-> Modified -  Some of the columns have been updated - employee.Name = "David";
+		Update Row 
+-> Deleted - Any Existing Entity is removed from the Content.  - context.Remove(employee);
+		Delete Row
+
+EF Stores Original Values and Current Values for Comparision.
+
+What happens when SaveChanges() is called?
+	EF Core loads some Entity before SaveChanges is called.
+		var employee = context.Employees.First(e => e.Id == 1);  -- EF Core loads the entity and stores it in an internal structure called the Change Tracker.
+	Now if any of the Value is updated for that entity.
+		employee.Salary = 7000;  -- Value updated to 7000
+	When SaveChanges() is called.
+		 Change Tracker stores the updated value and previous value as well and compares the both and creates list of changes to be done.
+			// 	According to the list of changes the Change Tracker generates the SQL Statement, to actually update the value for the entity.
+		UPDATE Employees SET Salary = 7000 WHERE Id = 1;
+
+
+
+Transactions using var transaction = await _context.Database.BeginTransactionAsync();
+Transactions - A transaction is a way to group multiple database operations into a single logical unit of work.
+	Never a half-completed operation. All or nothing. ATOMICITY
+
+Why transactions?
+	If we are Sending Money from A to B. Money got deducted from A, after that Server Crashed. B never recieved the money. Money Disappeared.
+	Transaction helps create a Temporary workspace, Changes are made inside this Workspace. until await transaction.CommitAsync(); is called.
+	Now after this CommitAsync(), the real database is permanently updated.      --- Commit means Looks Good, Make it Permanent.
+	
+Rollback Transactions - Forget everything I did in this transaction. (If there was a failure in between the process or Server Crashed or any other possible issue).
+	Actual Database is never updated with the new Values or updates.
+	
+	await context.SaveChangesAsync();  ---  EF Core automatically creates a transaction for that save operation.
+	
+	**EF Core has built-in transactions, but there are some cases when sometimes you need multiple operations to succeed together.
+
+Nested transactions - A transaction inside another transaction. Most databases do not support true nested transactions.
+	
+ACID Properties
+	Every database transaction is expected to follow four principles:
+		Atomicity   - All or Nothing
+		Consistency - The Database must remain valid.  (Rules are preserved.)
+		Isolation   - Transactions should not interfere with each other. (All requests must be isolated, Each transaction behaves as if it's running alone)
+		Durability  - Once committed, Data is permanent. Even if the Server crashes immediately after the commit.
+
+What if two users update same record simultaneously?  Concurrency
+	EF Core solves the Concurrency issue with the help of Concurrency Token. In specific -> public byte[] RowVersion { get; set; }
+	SQL Server automatically changes it every update.
+
+Optimizing Queries in EF Core
+	Projection with Select -> avoid loading entire entities (only required columns are fetched)
+	.AsNoTracking() -> For read only operations, improves performance by skipping the change tracking overhead
+	Compiled Queries -> For repeatedly running queries, avoids recompiling each time
+	ToQueryString() -> profile generated SQL Query, makes sure its efficient and returning exactly what is expected.
+
+Challenges in EF Core :- 
+	N+1 Query problem - When related data is not loaded efficiently and results in multiple round trips to DB.
+	Slow complex Queries - Unoptimized queries
+	Migration conflicts 
+
+Efficient LINQ queries can help avoid these issues
+
+If there are queries which EF Core does not support, use FromSQLRaw() or ExecuteSQLRaw() for custom queries.
+
+Model Binding and Validation 
+It is the process where ASP.Net Core maps request data like form values, query strings or JSON body to C# objects.
+	[ApiController]
+	public IActionResult CreatUser(UserDto user){} -> Here UserDto user is Model binding.
+The input parameter in body or url query is mapped to UserDto.
+It pulls the data from route values, query strings, form fields and JSON body.
+[FromQuery], [FromRoute], [FromForm], [FromBody]
+
+If input data does not match the model str, [ApiController] attribute automatically short-circuits the request and returns 400 BadRequest with detailed Error response.
+
+
+Unit Tests - verifies smallest testable parts of an Application.
+usually a single method or class in complete isolation.
+Fast Execution, Highly repeatable, Catches bugs before deployment, Acts as living documentation.
+
+Unit Test - Tests only 1 component in isolation. (Mocks everything else)
+Integration Test - Tests multiple components together using Real DBs and APIs.
+
+AAA pattern - Arrange, Act and Assert
+
+Test Driven Development TDD
+Writing the Failing test before actual production code.
+It follows Red Green Refactor Cycle.
+
+Use Github Actions or Azure Devops to automatically run the dot net run tests command on every single push request.
+If even a single test fails. CI/CD pipeline fail completely. Code is not merged to main branch.
+
+
+Asynchronous Model - 
+Parallel Execution, Multiple Threads are available, Multiple Instructions get executed simulatenously on different threads.
+
+Threads can be used to execute tasks, workitems, async I/O, timers.
+
+Async and Await :-
+To write Non-Blocking code that reads like synchronous code.
+It allows I/O bound operations like calling a DB, reading a file or making HTTP call to run asynchronously.
+Instead of a thread sitting idle, waiting for a DB to respond. The Thread is freed up to serve other users which massively improves the scalability of API.
+
+When a method marked with Async hits an await, it does not block the thread.
+Instead the compiler generates a hidden state machine (IAsyncStateMachine).
+It pauses the execution, yields the thread back to the thread-pool and once the awaited task completes, State machine resumes the execution exactly where it left off.
+
+Mistakes to avoid :- 
+Never use .Result() or .Wait() - It makes the thread wait synchronously for an asynchronous process, which causes Thread Pool Starvation.
+Fire and Forget Tasks - Calling an async method but not putting an await while calling.
+
+public async Task Function();
+Dont use async void. Always use async Tasks while method creation. Method should always return a Task.
+If it is void, there is no way User can track the completion of the Method/Task. 
+If an exception is thrown inside async void, it is not caught.
+
+ConfigureAwait(false);
+It tells the compiler that the continuation of the async method does not need to resume on the exact application thread context it started.
+In Modern ASP.Net Core, there is no synchronizationContext, so it does not prevent Deadlocks anymore.
+	SynchronizationContext in .NET/C#, it is a mechanism that helps code run on the correct thread or execution environment.
+
+Task - A standard task is reference type, it allocates the memory on heap, which has to be cleaned up by GarbageCollector at some point.
+ValueTask - It is a struct, it prevents unnecessary memory allocation. Stack Allocation (Zero GC pressure)
+If you have method which returns data immediately, like fetching from in-memory cache.
+Task (Unit of Work) - When a Task object is created and started, the CLR creates a thread for executing the task.
+Task represents asynchronous operation. It may or may not use a thread.
+
+For Heavy CPU bound work - use Task.Run() to explicitly offload complex functionality to background worker thread so it does not freeze the main calling thread.
+
+Task.Run() = CPU-bound work
+async/await = I/O-bound work
+
+Anti-Pattern - Never use Task.Run() in APIs.
+ASP.Net Core already runs on Thread Pool. If Task.Run() is used inside an API, it literally steals a second thread from the pool just to offload work from the first thread.
+Under Heavy-traffic it would exhaust the thread-pool and crash the Server.
+
+Concurrently calling multiple external APIs
+var task1 = _api.GetUserAsync();
+var task2 = _api.GetOrderAsync(); 
+await Taks.WhenAll(Task1, Task2);   - Runs both concurrently, waits for both to get completed
+Instead of awaiting for 1st task and then awaiting for 2nd task. It starts both tasks immediately and store them in variables.
+Then pass both to Task.WhenAll(), It runs them in parallel.
+
+Task.WhenAll() is asynchronous :- it returns a task that you can await, keeping thread free.
+		It is used when making a known number of independent asynchronous I/O operations, such as calling 2–10 external APIs.
+Task.WaitAll() is synchronous :- it physically blocks the current thread until all the tasks are complete.
+
+Parallel.ForEachAsync() :- When we have 1,000 users and want to call an API for each user.
+
+Every modern .Net API method asks for CancellationToken.
+It prevents server from doing useless work. If a user requests a massive DB Report and closes Browser after 2 secs. Server keeps generating the report in the background.
+Wasting CPU and DB resrcs. If a CancellationToken is passed all the way down to EntityFramework Core, the moment the User disconnects, query is instantly cancelled.
+
+
+Async Constructors are not allowed in C#. because Object Instantiation must be Synchronous.
+Best workaround is Factory method.
+Make a private constructor and create public static 'CreateAsync' method, which fetches data, creates obj and returns it.
+
+Task<List<User>> :- We have to wait for the entire DB query to finish, load all rows into memory and then return the list.
+IAsyncEnumerable :- Allows to stream the data asynchronously. It fetches and yields one User at a time.
+	It dramatically reduces Memory consumption for large DataSets.
+
+'Sync over Async' 
+It means calling an async method from a sync method, forcing it to block.
+Usually by calling .GetAwaiter().GetResult()
+It is dangerous because it ties up 2 threads. (1 waiting for sync and another for finishing async) Leads to Thread Pool Exhaustion.
+
+
+Hosted Service - Most Powerful Features in ASP.Net Core (also easiest places to create prod problems)
+	Memory Leaks, Duplicate processing, Thread Exhaustion, Stuck Jobs or even silently broken bg system.
+
+A Hosted Service is a long running background process that runs independently from incoming HTTP Requests.
+Unlike Controller which only executes when users calls the API.
+Hosted service starts automatically when the application starts and continue running in the background until application Shuts down.
+Implemented using 'IHostedService' or 'BackgroundService'.
+Hosted Services are Singleton by default.
+They are extremely useful for automation, recurring tasks, monitoring systems, and async bg processing.
+eg :- Sending scheduled Email, processing RabbitMq or KAFKA Queues, generating reports, running Recurring Cleanup Jobs.
+
+IHostedService is the lower level interface that gives developers complete control using StartAsync and StopAsync.
+BackgroundService is an abstract helper class build on top of IHostedService that simplifes the impl by providing ExecuteAsync method. It reduces boilerplate code and create cleaner impl.
+
+When the application Host starts, ASP.Net core resolves all registered Hosted Services from the DI and automatically calls StartAsync on each.
+On Application shut-down, ASP.Net core sends a cancellationToken.
+
+HostedServices fully support Dependecy Injection just like controllers.
+
+public class EmailWorker : BackgroundService{
+	private readonly IEmailService _emailService;
+	public EmailWorker(IEmailService emailService){
+		_emailService = emnailService;
+	}
+}
+
+DbContext should never be injected into the HostedService as HostedService - Singleton, DbContext - Scoped
+Lifetime Conflict risk.
+Correct Solution is creating scopes manually using 'IServiceScopeFactory'.
+
+Safest Approach is to create fresh DI scope during every execution cycle, it gives us a new DbContext instance each time worker runs and avoids memory leaks.
+	using var scope = _scopeFactory.CreateScope();
+	var db = scope.ServiceProvider.GetRequiredService();
+	var pendingMails = await db.Emails.Where(x => !x.Sent).ToListAsync();
+
+Always have proper try-catch blocks, retries, monitoring and structured logging.
+Some cases also have Automatic worker recovery and alerts.
+Because single Unhandled Exception can silently stop the worker forever.
+
+Use Polly for retries, Without retry temporary infra problems can completely break background processing. 
+
+HangFire - has Dashboards, retries, persistence and distributd execution.
+
+ASP.Net Core - supports multiple Hosted Services running simultaneously.
+
+Memory leaks :- 
+	Loading Huge datsets into memory without chunking 
+	Improper Scope disposal
+	Uncontrolled Bg Tasks
+	Thread Pool Exhaustion
+
+Queue Processing with Hosted Services  (Most Common UseCase)
+	RabbitMQ, Kafka, Azure Service Bus
+	Worker continously listens to the Service for messages and processes them asynchronously in the bg.
+
+'Duplicate Execution' - When 2 different servers run the same HostedService DuplicateNotifications
+
+Prevent Duplicate Executions :- 
+1. Distributed Locking 
+2. Leader Election
+3. Job Coordination 
+4. Single Execution Control
+5. Mulit-Server Synchronization
+
+Hosted Service Pracitces :- 
+1. Respect Cancellation Tokens and always add from controller/Service to DB EntityFramework
+2. Use IServiceScopeFactory
+3. Avoid DbCOntext Injection
+4. Handles exceptions properly
+5. Prevent Memory Leaks
+6. Monitor Jobs Dashboard
+7. Keep Jobs Idempotent - retries should not corrupt the data
+
+
+SignalR - Live Chats, Delivery Tracking, Stock Market, Instant Notifications, Multi-player Games, Real-time Dashboards 
+Instead of constantly refreshing pages or Polling APIs every few seconds, the Server can insteadly push updates to connected clients in real-time.
+	Server <-> Client
+SignalR is a Real-time communication Library, that enables Bi-Directional communication between Server and Client.
+Server can instantly push data to the browsers, mobile-apps or desktop applications without waiting for the client to request it manually.
+Internally SignalR abstracts technology like: WebSockets, Server Sent Events and Long Polling.
+
+Polling every few seconds feels out-dated and inefficient.
+
+SignalR Hub acts like a real-time communication endpoint between the server and connected clients.
+Every connected client receives the message instantly through Client.All
+
+public class NotificationHub : Hub{
+	public async Task SendMessage(string user, string message){
+		await Clients.All.SendAsync("RecieveMessage", user, message);
+	}
+}
+
+app.MapHub("/notifications");
+
+Frontend uses the SignalR Javascript Client to establish a persistent connection with the Server.
+const connection = new SignalR.HubConnectionBuilder()
+.withUrl("/notifications").withAutomaticReconnect().build();
+connection.on("ReceiveMessage", (user, message) => {
+	console.log(${user}: @{message});
+});
+await connection.start();"
+
+Once connected Browser can continously receive real-time updates without repeatedly calling APIs.
+
+Procedure :-
+SignalR tries to establish 'WebSocket' connection because it provides Full-Duplex communication with minimal overhead.
+If WebSocket are not available, SignalR automatically falls back to 'Server-Sent Events' or 'LongPolling'.
+This Transport abstraction is the reason it is loved.
+
+WebSockets create a persistent TCP connection b/w Client and Server,
+Unlike Http Polling connection stays open continously which reduces latency and unnecessary network traffic.
+
+SignalR supports multiple messaging patterns.
+Clients.All() - To Broadcast message to all Clients.
+Clients.User(userId) - Allows sending message to specific user
+Clients.Group(groupName) - Send messages to specific groups 
+
+SignalR groups are logical connection of connected clients.
+When User Joins a room, SignalR internally tracks their ConnectionIds and adds it to the Group, to broadcast only to the group. 
+public asyn Task JoinRoom(string roomName){
+	await Groups.AddToGroupAsync(context.ConnectionId, roomname);
+}
+
+SignalR Hubs should be secured in production using JWT Authentication or Cookie Auth.
+Front-end attaches JWT Token during connection creation, and ASP.Net Core validates using normal authentication middleware.
+const connection = new SignalR.HubConnectionBuilder().withUrl("/notifications", {
+	accessTokenFacotry: () => jwtToken
+	}).build();
+	
+SignalR supports Automatic Reconnection Support
+
+If Application runs on different servers, If ServerA sends a message ServerB does not know about it, 
+without Synchronization, users connected to diff servers would stop receiving updated data.
+To avoid this SignalR requires a 'BackPlane'.
+
+A BackPlane synchronizes SignalR message across all Server. 
+'Redis' most common
+When 1 Server publishes a SignalR event, Redis distributes the message to all other Servers.
+
+Azure SignalR Service - Managing 1000s of WebSocket connections manually becomes extremely difficult at scale.
+Azure SignalR Service handles - Connection Management, Scaling, Load Balancing, Connection persistence.
+This removes massive infrastructure complexity from enterprise applications.
+
+In-Memory Cache and Distributed Cache
+
+What happens when cached data becomes stale?
+
+Online Users (Whatsapp - User Online)
+Every SignalR client recieves a unique connectionid, Developers typically map UserIds to active connections using in-memory caches, Redis, or distributed storage.
+This enables Presence tracking, Online Indicators, Typing Indicators and Active Session Monitoring.
+
+SignalR Systems must carefully manage -  (Avoid Server Overloading)
+Payload Size
+Connection Count (Too many connections alive without proper scaling)
+Serialization overhead 
+Memory Usage
+Message Frequency
+
+Mallicious Users can flood the servers with 1000s of messages per second.
+It can exhaust CPU, memory, and netwrok resources.
+
+To avoid this :- Rate limiting, Message Throttling, Message Validation, Queue Buffering, Protect CUP & Memory
+
+Moving from tight API coupling to an asynchronous background worker, and then replacing inefficient polling with full-duplex SignalR communication, is a massive win for scalability.
+ 
+Asynchronous Report Generation via SignalR
+In one of our core applications, users frequently need to download hundreds of reports simultaneously. 
+Handling this via traditional, synchronous REST APIs created significant bottlenecks and risked thread starvation due to long-running processes.
+
+To resolve this, we decoupled the architecture using a producer-consumer pattern via .NET BackgroundServices:
+Asynchronous Processing: API endpoints now immediately offload report requests to a background service and return an instant acknowledgment to the user, freeing up the main application threads.
+State Management: The background service processes the queue, generates the reports, uploads them to storage, and retrieves the secure download URLs.
+
+The SignalR Advantage: > Initially, the client application used a polling mechanism (pinging the server every 3 seconds) to check the generation status. 
+We replaced this with SignalR for real-time, push-based communication. Instead of the client constantly asking for updates, the server proactively pushes a notification to the client the exact moment a report is ready. 
+This transition drastically reduced server overhead, minimized network traffic, and significantly enhanced the overall user experience.
+
+Session / State Management :-  'services.AddSessions()'  &&  'app.UseSessions()' - Middlewares used for sessions.
+-> Cookies - It sotres the data in User's Browser. Browser stores cookies with every request.
+-> Sessions - Session state helps in transmitting data b/w diff pages. (State Management)
+-> Temp data - To Transfer the data from Controller to View.
+
+
+Microservices
+It can dramatically improve scalability, deployment speed and Team Independence.
+
+Microservice is a small independent service responsible for a specific business capability.
+Each service owns :-
+	Its own business logic.
+	Its own Database (If multiple services directly share the same Database(Anti-Pattern), they become tightly coupled again)
+	Its own deployment pipeline
+	and often its own development lifecycle
+
+Instead of building one large Application with everything, we split the system into smaller services focussed on individual domains like Orders, Payments, etc.
+
+Monolith - Everything usually runs inside one application and often shares the same Database, which makes development easier and simpler internally.
+As the application grows deployments become riskier, scaling becomes complex.
+
+Microservices have the biggest advantage of Independent Scalability.
+eg:- Only scaling Order service for Sales events, instead of scaling entire application.
+Makes Applications resillient, makes deployments faster, increases team ownership and fault isolation.
+
+Microservices introduces Network communication, Distributed Failures, Monitoring challenges, Deployment complexity and infrastructure overhead.
+
+
+Converting Monolith to Microservice:-
+Identifying bounded contexts using Domain-Driven Design principle.
+Look for Business Domains that can operate relatively independant
+
+Best practice is 'Incremental Extraction' - Slowly move one domain at a time
+
+Microservices commonly use :-
+REST APIs for synchronous comm, gRPC for high performance for internal communication
+Message brokers like RabbitMQ, Kafka for asynchronous communication
+
+Large Systems prefer messaging because distributed system fails constantly.
+If Service A directly calls Service B, a temporary outage in Service B can break the entire workflow.
+With Asynchronous messaging, service becomes more resillient and Event-Driven. (They communicate through events instead of immediate blocking requests)
+
+An API Gateway acts as a centralized entry point for all client requests.
+API Gateway handles Routing, Authentication, RateLimiting, Moniotring, Caching.
+
+Popular .Net API Gateway - YARP(Micorsoft), Ocelot, NGINX, KONG, Cloud-Native 
+
+
+MicroService Infrastructure -
+Docker(Containerization)
+Kubernetes(Orchestration)
+CI/CD Pipelines (Automation)
+
+
+'Virtual' and 'Override' - When base class defines virtual members, and derived class defines member with override.
+Virtual allows a method to modify itself, and to be overridden in derived class.
+
+While Overriding, the return type, order & number of arguments, visibility remains the same.
+
+'Sealed' - prevents overriding for Methods and Inheritance for Classes. Only an overriden method can be sealed. Any Classes can be sealed
+
+
+
+SOLID Principle - 
+S - SRP - Single Responsibility Principle - One class should do only one thing at a time, Create a new class for different functionalities
+	public class Employee{
+		public int id { get; set; }
+		public string Name { get; set; }
+		public int Type { get; set; }
+		public decimal Salary { get; set; }
+		--public virtual decimal HealthInsurance { get; set; }   // All the attributes which are or can be optional to further inherited classes should not be included in the Base/Parent Class (ContractEmployee does not have HelathInsurance, so we will have to remove it from that class if present in Parent)
+		public virtual void doTask(){ //Task of Employee }
+	}
+O - OCP - Open for Extension and Closed for Modification - rather than modifying the class itself, try to extend it. SRP is a pre-requisite for OCP.e
+	public class SalaryCalculation{  // Default Salary class
+		public virtual double CalculateSalary(Employee e) return 0;
+	}
+	
+	public class ManagerSalaryCalculation : SalaryCalculation{    // Method extended and overriden
+		public override double CalculateSalary(Employee e) return 2000;
+	}
+	
+	public ManagerController(){ ManagerSalaryCalculator salary = new ManagerSalaryCalculator(); }
+	
+L - LSP - Liskov Substitution Principle - The Child class should be able to implement all the method of the parent class seamlessly and smooth.
+	public class InternalEmployee : Employee {
+		public override void doTask() { // Internal Tasks } 
+	}
+	public class ManagerEmployee : Employee {
+		public override void doTask() { // Managerial Tasks }
+	}
+	public class ContractEmployee : Employee {
+		public override void doTask() { // Contractual Tasks } 
+	}
+
+I - ISP - Interface Segregation Principle - Any Code should not be forced to use methods which it does not need.
+	Interface should only have methods which will have the implementations in the inherited class.
+	Have multiple interfaces with different logics.
+	IRead, ICRUD : IREAD Now CRUD has CRUD + Read and If there is a case where only read is required can use IRead.
+
+D - DIP - Dependecy Inversion Principle - Higher Level Module should not depend on Lower level Module directly, rather it should Access it via Interface
+	Higher Module -> Interface -> Lower Module (Abstraction)
+	
+DRY Principle - Do Not Repeat Yourself
+-> Write a code once and inherit it in multiple places wherever required.
+Same Code should not be written again anywhere or multiple times. (Make a method and use it at all places required). 
+
+
+Whenever a derived class object is created bases class object is created first, so the base calss constructor is called 1st then Derived class.
+
+
+Modern .NET developers heavily rely on Object-Relational Mappers (ORMs) like Entity Framework Core
+Before Entity Framework Core came along to manage the Databases for us automatically, ADO.Net was the primary way to talk to DB.
+Entity Framework is an ORM(Object Relational Mapping) Tool
+
+Feature 	    	ADO.NET		                             Entity Framework Core
+Type             Raw Data Access                           Object-Relational Mapper (ORM)
+SQL Control     Absolute (Sql queries written manually)    Automated. EF generates the SQL for you from C# LINQ queries.
+Performance      Blazing Fast. Minimal overhead            Fast, but introduces slight overhead due to translation layers.
+Development      Slow, Repetitive boilerplate code          Very Fast. Drastically reduces boilerplate code.
+Mapping          Manual mapping                              Automatic mapping to C# Classes (Entities).
+
+ADO .Net - ActiveX Data Object for .NET (It acts as the bridge between your C# application and your relational databases)
+It is a mechanism to connect to any DBMS/RDBMS.
+-> Data Provider (Connected Components) - Connection, Command, Reader, DataAdapter
+-> Data Set (Disconnected Components) - Explicitly designed for data access, independant of any data source
+
+For Connected environment, .Net makes the provider class available, For Disconnected environment, It provides the DataSet.
+
+1. xxxx Connection (Data Provider) - Connection Object provides connectivity to the DB. Requires a connection string 
+SqlConnection conn = new SqlConnection();
+conn.ConnectionString = "";
+conn.open(); conn.Close();
+
+2. xxxx Command - Creates/Prepares SQL Queries/Statements and gets it executed on the SqlServer using conn.
+Connection, CommandText(executable statements), CommandType - Text or StoredProcedure, Transactions, Parameters
+
+using (SqlConnection conn = new SqlConnection(connectionString)){  // Establish the Connection
+	try{
+		conn.Open();
+		using (SqlTransaction transaction = conn.BeginTransaction()){  // Start a transaction to ensure data integrit
+			try {
+				using (SqlCommand cmd = new SqlCommand()){    // Create the Command and associate it with the Connection and Transaction
+					cmd.Connection = conn;
+					cmd.Transaction = transaction; 
+					cmd.CommandType = CommandType.Text;    		// Also CommandType.StoredProcedure
+					cmd.CommandText = "INSERT INTO Customers (FirstName) VALUES (@FirstName);";
+					cmd.Parameters.Add("@FirstName", SqlDbType.NVarChar, 50).Value = "John";    
+					int rowsAffected = cmd.ExecuteNonQuery();        // Execute the command on SQL Server 
+					transaction.Commit();
+				}
+			} catch{ transaction.Rollback(); throw;
+		}
+	} catch(Exception ex){ Console.log(ex.Message);}
+
+-> ExecuteNonQuery(): Used for INSERT, UPDATE, and DELETE. It returns an integer representing the number of rows modified.
+-> ExecuteScalar(): Used when your query returns exactly one value (e.g., SELECT COUNT(*) FROM Customers or getting a newly generated ID).
+-> ExecuteReader(): Used when you are running a SELECT statement and want to loop through a large set of rows and columns sequentially.
+
+3. xxxx DataReader - A highly optimized, forward-only, read-only stream of rows from the database.
+ -> It keeps the database connection open while you read. 
+	Because it doesn't load the entire query result into memory all at once (it pulls one row at a time), it is incredibly fast and memory-efficient.
+It extracts the data from the result of command and makes it available at the Application Server.
+.HasRows() - if there are any rows in the result set, .FieldCount() - Number of columns in current row
+
+4. Data Adapter provides bridge between DataSet Object and the DataSource. (Connected Data provider and Disconected Data Set)
+
+Always wrap Connections in using blocks
+Use Async Methods
+For Multiple Readers or Result Sets always make MultipleActiveResultSets = true. (Else only one reader is allowed at a time.)
+
+
+Transactions - Measurable change in values
+
+ACID Propertieds -
+-> Atomicity - Set of actions are completed all together or not completed at all.
+-> Consistency - After and Before any DB transaction the DB must be in a consistent space.
+-> Isolation - Every Transaction is isolated from other transactions.
+-> Durability - Dependability of the Data. After a Transaction is complete. The updates and modifications to the DB are stored in and written to the Disk.
+
+Dirty Reads - When a Transaction is allowed to read a row that has been modified by another Transaction that is not been committed yet.
+It occurs because of multiple Transactions at a time which is not committed.
+
+
+LINQ - Langauge Integrated Query
+Unified way of querying. It allows you to write clean, type-safe, and readable queries against any data source using a unified syntax.
+It is used to generate highly optimized SQL Statements
+
+LINQ works via a provider model. The C# code written is translated by a LINQ Provider into a format the underlying data sources understand.
+-> LINQ to Objects: Used to query in-memory collections like List<T>, Dictionary<T>, or arrays.
+-> LINQ to Entities (EF Core): Translates your C# LINQ expressions into highly optimized SQL queries and executes them on a database server (like SQL Server, PostgreSQL, etc.).
+-> LINQ to XML (System.Xml.Linq): Used to query and manipulate XML documents efficiently.
+
+Syntaxes :-
+1. Query Syntax (Declarative)
+	List<int> numbers = new List<int> { 1, 2, 3, 4, 5, 6 };
+
+	var evenNumbers = from num in numbers
+						where num % 2 == 0
+						select num;
+						
+2. Method Syntax (Fluent / Lambda)
+	var evenNumbers = numbers.Where(num => num % 2 == 0);
+	
+Built-in operators
+-> Filtering (Where) - Filters a collection based on a condition.
+	var VIPs = customers.Where(c => c.TotalSpent > 1000);
+-> Projection (Select, SelectMany) - Transforms elements into a new shape or extracts specific properties.
+	List<string> emails = customers.Select(c => c.Email).ToList();
+-> Ordering (OrderBy, OrderByDescending, ThenBy) - Sorts the data
+	var sortedEmployees = employees.OrderBy(e => e.LastName).ThenBy(e => e.FirstName);
+-> Elements (First, FirstOrDefault, SingleOrDefault) - Extracts a specific single element from a collection.
+	First(): Returns the first item. Throws an exception if the list is empty.
+	FirstOrDefault(): Returns the first item, or null (default) if empty. (Highly Recommended)
+		var user = users.FirstOrDefault(u => u.Id == 42);
+-> Aggregation (Sum, Min, Max, Average, Count) - Performs math calculations over the collection.
+	int totalInventory = products.Sum(p => p.UnitsInStock);
+-> Quantifiers (Any, All) - Returns a boolean check based on your criteria.
+	bool hasOverdueInvoices = invoices.Any(i => i.IsOverdue);
+	
+Deferred Execution (Lazy Evaluation)
+When we write a LINQ query, it does not run immediately. It merely stores the instructions on how to execute the query.
+The query is only executed when we actually try to read the data.
+	// Query is defined here, but NOT executed yet
+	var query = list.Where(x => x > 1); 
+	// The query actually RUNS here because we call ToList()
+	var result = query.ToList();
+	
+Greedy Operators - .ToList(). .ToArray(), .ToDictionary(), FirstOrDefault(), Count()
+
+In .NET, IEnumerable and IQueryable are two of the most fundamental interfaces used to work with collections of data.
+-> Use IEnumerable for data sitting in your local machine's memory (RAM).  LINQ operations are generally performed in .NET/application memory.Give me objects/elements and I'll use .NET to process them.
+		Give me objects/elements and I'll use .NET to process them.
+			_dbContext.Employees.AsEnumerable().Where(e => e.Salary > 100000).Take(10).ToList();    Where and Take are executed by .NET against the sequence being enumerated.
+
+-> Use IQueryable for data sitting out in a remote database (SQL Server, PostgreSQL, etc.)
+		LINQ operations can be represented as expression trees and translated by the query provider, such as EF Core, into SQL.
+
+IEnumerable (System.Collections.Generic) - every data collection in C# (List<T>, Array, Dictionary<T>) implements IEnumerable.
+	IEnumerable executes queries using LINQ to Objects. It acts as a forward-only reader over an in-memory collection. 
+	When you filter an IEnumerable, it pulls all the data into memory first, and then filters it locally using C# code.
+		// Imagine this table has 1,000,000 rows in the database
+		IEnumerable<Employee> employees = _dbContext.Employees.AsEnumerable();
+		// This filtering happens entirely in your Application's RAM!
+		var highEarners = employees.Where(e => e.Salary > 100000).Take(10).ToList();
+		
+IQueryable (System.Linq) - It inherits from IEnumerable, but it is designed specifically for remote data sources.
+	IQueryable executes queries using LINQ to Entities. Instead of holding raw data, it holds an Expression Tree—which is a blueprint of what you want to find.
+		It represents a query that can be translated by a provider
+	When you apply filters like .Where() or .Take(), it doesn't run them immediately. It converts the C# Logic into SQL Query. The database engine executes the filter, 
+	and only the matching results are sent back over the network.
+		// This creates an Expression Tree blueprint (0 rows downloaded yet)
+		IQueryable<Employee> employees = _dbContext.Employees.AsQueryable();
+		// The query is translated into SQL and executed on the database server!
+		var highEarners = employees.Where(e => e.Salary > 100000).Take(10).ToList();     // SELECT TOP 10 * FROM [Employees] WHERE [Salary] > 100000
+
+
+
+CQRS - Command Query Responsibility Segregation.
+	Separate operations that change state from operations that only read state.
+		OrderCommand - Write Model ➜ Change Data
+		OrderQuery - Read Model ➜ Read Data
+
+	A Command expresses an intention to change something. A command changes state and usually doesn't return the requested data.
+	A Query asks for information without changing state.
+		Same Database is used.
+	Command Handler - Command Orchestration.  What should happen when Command arrives?  It can coordinate validation, authorization, transactions, and domain services.
+	
+	Don't force the same model to serve both responsibilities when separating them provides a useful architectural benefit.
+
+	** CQRS is not automatically better. For a simple CRUD application, separating commands and queries can add unnecessary complexity. It's most useful when the read and write sides have substantially different requirements.
+
+
+Design Patterns :- (Must Patterns)
+	Design Patterns provide proven standardized soltuions to common architectural problems. They drastically improve Code Reusability, Testability and Maintainability.
+	
+	➜ Repository Pattern :- It is essential for abstracting data access logic. Instead of Tightly Coupling our services to Entity Framework, Use an interface for the Repository.
+			Interface of repository make Mocking data for Unit Testing easier and allows us to swap the persistence implementation if business requirements change.
+	
+	What is Unit of Work pattern and Repository ?
+		We use Unit of Work and Repository pattern together as they complement each other perfectly.
+		A Repository handles data operations for one single entity. A Unit of Work co-ordinates transactions across multiple repositories.
+			In complex domains we can use IUnitOfWork.SaveChangesAsync() to ensure all changes across multiple tables are commited in a single, safe database transaction.
+	
+	➜ Singleton Pattern :- This ensures a class has only one instance throughout entire application Lifetime. instead of writing complex custom singleton classes. 	
+				We register the service using service.AddSingleton<ILoggingService, LoggingService>();
+			Perfect for Stateless Service or share in-memory caches.
+	
+	➜ Factory Pattern :- It creates Objects without exposing the complex creation logic to the client. It keeps Controller unaware of the complex condition based creation logic.
+	
+	➜ Strategy pattern :- Its good for encapsulating Algorithms. Instead of writing massive if else blocks, we inject a specific strategy. Follows OCP.
+
+	➜ Mediator Pattern :- (CQRS) Mediator pattern acts as a Central Hub for Communication. With the Mediator Library, We implement CQRS by separating commands and queries.
+							Controller sends a Command / Query and MediatR routes directly to that specific Handler. It decouples our API from our business logic.
+	
+	➜ Decorator Pattern :- It lets us attach a new behaviors dynamically without changing the code.
+								services.Decorate<IEmailService, LoggingEmailService>();    // DI Setup using Scrutor Library, 
+									We wrap inside a LoggingEmailService, Logging or retries can now be added to EmailService without ever modifying the actual Service.
+	
+	➜ Adapter Pattern :- It is a bridge between two incompatible Interfaces. When consuming a third-party API to get a response and align it to the expectation of our own Service.
+							Adapter makes the response from external API in the same format as that of our Service.
+	
+	➜ Null Object Pattern :- Instead of returning Null and forcing the Consumer to write Null-Checks, We return a no-op Object or an empty collection.
+								return new NoOpLogger();  				// instead of returning Null
+								return Enumerable.Empty<Product>();		// instead of returning Emptylist.
+	
+	➜ Builder Pattern :- It separates the construction of a complex object from its representation. (Fluent APIs)
+							Instead of a constructor with 15 parameters, we chain methods together like var order = new OrderBuilder().withCustomer("John Doe").AddItems(cartItems).Build();
+								It ensures Object is build in a valid state step by step.
+	
+	➜ Chain of responsibility :- (BackBone of ASP .Net Core Middleware) In this pattern a Request processes through a chain of Handlers. 
+									Each Middleware processes the request and then passes the request to the next Middleware in the pipeline/chain. 
+	
+	➜ Options Pattern :- Options pattern strongly types our AppSettings.Josn configurations. 
+							Instead of Injecting IConfiguration and searching for strings, We map the JSON to a C# Class. We inject IOptions into our Services.
+	
+	➜ Facade Pattern :- When the API becomes too complex for a client call. Facade Pattern provides a simplified interface to a complex system. Client is only exposed to a single endpoint performing all complex logic.
+	
+	➜ Proxy Pattern :- It acts as a Placeholder or a Surrogate for another Object. CachingProxy 
+	
+	➜ Observer Pattern :- It defines a one-to-many relationship where objects are notified of State changes. While we traditionally use C# events. 
+							In Modern Apps we use Pub/Sub message Bus. When an Event completes, system publishes an Event. Multiple bg services Observe or subscribe to event and react.
+							Architecture is highly decoupled.
+	
+	➜ Circuit Breaker Pattern :- Stops an application from repeatedly trying to execute an operation thats likely to fail. Using Polly and .Net
+	
+	➜ State Pattern :- It allows an Object to alter its behavior when its internal state changes 
+
+
+Dockerizing a .Net Core Application :- Docker helps developers to package applications with all their dependancies into light-weight, portable units called Containers.
+										It completely eliminates the "Works on my machine problem" by ensuring consistent env across development, testing and Prod.
+										Its the absolute foundation for Microservices and CI/CD pipelines.
+										
+	Docker Image and Docker Container :- Docker Image is a read-only, static template that contains your app and dependancies.
+										 Docker Container is a live, running instance of that image. It has its own memory and CPU, and you can start stop or delete it.
+	
+	Docker File :-  It is essentially a script of instructions. It tells the Docker engine exactly how to build your image step-by-step. 
+					It defines the base OS, copies your C# code, restores nuget packages, builds the app and tells the conatiner hoow to run the final dll.
+
+	Entrypoint in Docker File :- CMD and ENTRYPOINT. Both are used to define the command that runs when the Container Starts.
+									Entrypoint configures a container that will run as an executable. it can not be easily over-ridden from the command line. (Microsoft reccomends ENTRYPOINT)
+									CMD is easier to override and is often used to pass default arguments to ENTRYPOINT.
+
+	DockerIgnore :- .dockerignore file. Works exactly like .gitingore. to skip local bin obj folders or git history.
+	
+	Docker CLI is used to actually build and run the application from DockerFile.
+		docker build -t myapp:v1   			// creates the image 
+		docker run -d -p 8080 myapp:v1	   	// starts the container
+
+	For multi container Applications, use Docker Compose. docker-compose.yml file defining all the services.  
+		docker-compose up  // Docker spins up WebAPI, SQL Server, Redis and attaches them to same internal network so they can talk to each other.
+
+
+Azure CI/CD Deployment :- For No Server Downtime.
+	Azure offers multiple hosting options. Azure App Services, Azure Container Apps/AKS, Azure Functions, Azure Statice Web APPs.
+		➜ Azure App Service - Simplest and most popular. Azure manages the infrastructure, operating system, Scaling and Deployments. Allowing developers to focus entierly building application.
+		➜ Azure Container Apps - If the Application is packaged as a Docker Container. AKS - Azure Kubernetes Service.
+		➜ Azure Functions - For Event Driven Workloads such as Processing Queue Messages HTTP Requests.
+		➜ Azure Static Web APPs - Blazor WebAssembly Application / SPA 	Frontends
+	
+	CI - Continous Integration - It means everytime a developer commits a code an automated server builds the code and runs all unit tests to ensure nothing ir broken.
+	CD - Continous Deployment - If the CI build passes the CD pipeline automatically takes that compiled code and deploys it to the Server.
+	Github Actions and Azure Devops are used for Pipelines
+	
+	Deployment Slots :- Game changer for Zero Downtime Deployments. Instead of deploying directly to production and taking the site offline, we deploy to a Staging Slot.
+						We can test live code on Staging URL, Once everything is confirmerd, we perform SWAP. Azure instanlty routes production traffic to the new code with zero dropped requests.
+							"BLUE-GREEN Deployments"  Blue is current Live Environment and Green is new Code. By swapping the slots, Green env is made live. If critical bug is discovered, simply swap back.
+	
+	Handling Sudden Spikes in Azure :- Confogure Auto Scaling in Azure rules. If CPU usage goes above X%, automatically Scale out by adding 2 more instances. Once traffic dies down Scale down.
+
+
+Nuget Package :- It is essentially a .nupkg package file which is a compiled ZIP archive. It contains compiled code (DLLs), package metadata, dependency version lists.
+					We create them to share reusable functionality across multiple applications or projects, so we dont have to copy-paste code everywhere.
+	Only Reusable, Stateless and Cross-Cutting concerns should be packaged. Custom Logging Frameworks. Standardized HTTP Clients. Custom Authentication Middleware.
+
+	One Package supports different Frameworks or Versions of .Net. By using Multi-Targeting, by changing TargetFramework to TargetFrameworks, compiler generates multiple DLLs.
+
+
+Diamond Dependancy :- A diamond dependency is a situation in software dependency management where two different dependencies depend on the same package, potentially at different versions.
+       Your App
+       /      \
+      A        B
+      |        |
+   C v1.0    C v2.0
+
+The package manager has to decide which version of C to use.
+
+Depending on the ecosystem, it might:
+- Choose one version and use it for everything.
+- Install both versions.
+- Upgrade/downgrade one dependency.
+- Fail because the version requirements are incompatible.
+
+If A requires CommonLib >=1.0,<2.0 while B requires CommonLib >=2.0, there may be no single version that satisfies both.
+
+
+To Be Done - Once all of this is Sure and Guaranteed
+1. Garbage Collection + Memory Management - IDisposable, Using statement
+2. Collections - List<T>, Dictionary<TKey,TValue>, HashSet<T>, Queue<T>, Stack<T>, ConcurrentDictionary
+	Why Dictionary lookup is O(1)? Difference between List and HashSet?
+3. Thread Safety - lock, Monitor, SemaphoreSlim, Mutex, Concurrent Collections, Interlocked
+4. Memory optimization - Span<T>, ReadOnlySpan<T>, Memory<T>, ArrayPool<T>
+5. API Versioning
+6. Caching - IMemoryCache, IDistributedCache, Redis
+7. Performance Optimization - Response Compression, Pagination, Rate Limiting, Output Caching, Connection Pooling
+8. Microservices - Saga Pattern, Outbox Pattern, Circuit Breaker (Polly), Service Discovery, Distributed Transactions, Eventual Consistency
+9. Saga Pattern, Outbox Pattern
+
+
+What is the difference between Middleware and Filters?
+		Middleware					Filters ([Authorize], Action, Custom, Exception Filters)
+	Works at the HTTP request pipeline level	Web API Pipeline, Works within MVC/Controller/Razor Pages execution
+	Can run for almost every request		   Applies to selected Controllers/Actions
+	Doesn't inherently know about MVC actions	Has access to MVC/action context
+	Good for global concerns			Good for Action/Controller-specific concerns
+	Authentication, log, exception handling		Validation, action logging, authorization, result processing
+	
+	Request ➜ Middleware Pipeline ➜ Middlewares Before Execution ➜ Web API Pipeline ➜ Filters Before Execution ➜ Controller Action ➜ Filters After Executions ➜ Middlewares After Execution ➜ Response
+
+	Both Filters and Middleware can be executed before and after any Controller Action. Both of them can modify HTTP request and response and can short-circuit a request.
+	
+How do you implement Global Exception Handling in .NET Core?
+	In ASP.NET Core, the recommended approach is to handle exceptions globally at the Middleware level, rather than putting try-catch in every controller.
+		app.UseExceptionHandler("/error");
+	Custom Exception Middleware app.UseMiddleware<ExceptionMiddleware>();
+	
+	Using exception-handling middleware, because middleware sits at the HTTP pipeline level and can catch unhandled exceptions from downstream middleware, filters, controllers, and other components. 
+		I would log the exception and return a consistent error response, preferably using ProblemDetails.
+
+Explain Circuit Breaker Pattern with a real-world example.
+	Circuit Breaker is a resilience pattern used in distributed systems to prevent repeated calls to an unhealthy downstream service. It has 3 states: Closed, Open, and Half-Open.
+	In the Closed state, requests flow normally. If failures exceed a configured threshold, the circuit Opens and subsequent calls fail fast without calling the downstream service. 
+	After a cooldown period, it moves to Half-Open and allows a few test requests.
+	
+	If a downstream service keeps failing, the circuit breaker stops sending requests to it temporarily.
+	
+	Without a Circuit breaker, new requests will repeatedly be called to the Service and it would fail each and every time until the Service is up and running.
+	Threads and resources are consumed.
+
+Difference between Synchronous and Asynchronous Communication.
+	Synchronous : Wait for the response, Once response is received then proceed further with the execution.  	HTTP, REST, gRPC    			High Coupling
+	Asynchronous: Send the Request and continue with the execution, Once request completes it informs.		Queue, Message/Event Brokers		Low Coupling
+
+	await httpClient.GetAsync(url); This is asynchronous programming, because the thread doesn't need to block while waiting for I/O, but it's still Synchronous communication.
+		Thread is free to do other work, It is not Blocked.
+	
+	Use synchronous communication when:  In synchronous communication, the caller sends a request and waits for the receiver's response before continuing. REST and gRPC are common examples
+		You need an immediate response.
+		The caller cannot continue without the result.
+		You need a simple request/response interaction.
+		
+	Use asynchronous communication when:  In asynchronous communication, the sender publishes a message or event and doesn't wait for the consumer to finish processing it. Kafka, RabbitMQ, Service Bus
+		The work can happen in the background.
+		You don't need an immediate result.
+		Reduce coupling between services.
+	When Async and await are used in the APIs they are used for making the flow Synchronous, else if we are using some third-party API and we dont use Async and await. Execution would complete before we receive response from the external API
+
+
+Why does Async Await does not automatically create a new thread ?
+	Because async/await is primarily about not blocking a thread while waiting, not about creating threads.
+	There is no need to create another thread while waiting for the HTTP response.
+	
+	But when does a new thread get created? This is where people often confuse async with Task.Run.    Async/Await Usually doesn't require a new thread for the waiting.
+	Task.Run explicitly schedules the CPU-bound work on the ThreadPool.
+	Async/await is designed to avoid blocking threads, especially during I/O operations.
+
+What causes thread pool starvation ?
+	Thread Pool Starvation happens when all available ThreadPool threads are busy for too long, so new work has to wait for a ThreadPool thread to become available.
+		• Blocking on async code. Not using await for an async method.
+		• Synchronous database calls. If the database takes 5 seconds to respond, the request thread can remain occupied during that wait.
+		• Synchronous HTTP calls. External API call without async/await.
+
+How do you secure APIs in Microservices architecture?
+		I would use OAuth 2.0/OpenID Connect for authentication and JWT access tokens for API access. API Gateway can act as a Centralized entry point.
+	Client ➜ API Gateway ➜ Authentication / Authorization ➜ Microservice A ➜ Microservice B ➜ Database
+
+What is API Gateway and why is it required?  (Reverse Proxy)
+	An API Gateway is a server that acts as the single entry point for all client requests to your backend services (microservices or APIs). Instead of Clients talking directly to the Server.
+	
+	Authentication, Authorization, Logging, Monitoring, Request Routing, Rate Limiting, Caching, API Versioning
+
+How do you handle distributed transactions?
+	In a microservices architecture, a distributed transaction happens when one business operation needs to update data in multiple services/databases.
+		Order Service ➜ Payment Service ➜ Inventory Service ➜ Notification Service     What happens if Payments Succeeds but Inventory fails.
+
+	Saga Pattern: It breaks one large transaction into a sequence of local transactions. Each service commits its own database transaction. If something fails, we execute a compensating transaction.
+		A compensation isn't a database rollback. It's a new business operation that reverses the effect of a previous operation.
+*Idempotency is very important
+
+
+How would you improve an API that is responding slowly? 
+If an API is taking 10+ seconds in production, how would you troubleshoot it? 
+An API response time suddenly jumps from 100ms to 5 seconds. How would you investigate it?
+	In a real application, latency can come from:
+		• Database queries
+		• External API calls
+		• Excessive object mapping
+		• N+1 queries
+		• Incorrect EF Core tracking
+		• Thread pool starvation
+		• Network latency
+		• Serialization/deserialization
+		• Poor caching strategy
+	
+	EF Core takes 5 seconds :
+		• Check the generated SQL
+		• Verify indexes
+		• Check unnecessary Include() calls 
+		• Use projections instead of loading entire entities  .Select()
+		• Evaluate AsNoTracking() for read-only queries
+	
+	API works for 100 Users but fails with 1000
+		Stateless APIs, Connection Pooling, Async/Await, Thread Pool usage, Caching, Rate Limiting, Horizontal Scaling 
+
+Why did you choose Layered Architecture?
+	Layered Architecture: Presentation/Application Layer (Controllers, Configurations, Hosting) ➜ Business Layer (Service / Rules) ➜ Data Access / Domain Layer (Repository) ➜ DB
+		Separation of Responsibilities. Each layer has a clear responsibility. Easier Maintenance and Testing
+
+	Clean Architecture: Presentation ➜ Application ➜ Domain ⬅ Infrastructure
+		If the domain were much more complex or we needed stronger independence from infrastructure, I would consider Clean or Hexagonal Architecture
+
+Why do we use Dependency Injection in .NET?
+	Dependency Injection (DI) reduces tight coupling between classes and makes the application easier to test, maintain, and change.
+		Without DI, we would have to create a new Instance wherever we required the Service/repository. Constructors would be having  _repository = new OrderRepository();
+	
+	Loose coupling + Testability + Maintainability + Lifetime management.
+	
+Why did you implement the Repository Pattern? SRP
+	The Repository Pattern provides an abstraction over data access/persistence. Instead of Business Service directly dealing with EF Core and Database, We introduce a Repository.
+		Order Service ➜ IOrderRepository ➜ Order Repository ➜ EF Core ➜ Database
+	Separation of concerns: The service should focus on business logic, not database-specific operations. Easier testing, Loose Coupling
+
+What are boxing and unboxing in C# where can they occur in real time application ?
+	Boxing and unboxing happen when C# converts between a value type and object
+		Boxing means converting a value type → reference type     // int age = 25;   object obj = age;      --- So the value 25 is wrapped inside an object.
+		Unboxing is the reverse: object → value type.  		  // object obj = 25;  int age = (int)obj;  --- The runtime checks that the object actually contains an int, then copies the value back to an int.
+		
+	Older collections such as ArrayList expects object, but 10 is an int. Modern C# normally uses generic collections instead, it avoids boxing in normal use.
+
+
+12. How does Authentication and Authorization work in your application?
+13. Explain the JWT Authentication flow from Angular to .NET API.
+16. How do you integrate third-party APIs?
+
+What factors would you consider before introducing Redis caching into an application?
+When can async/await actually hurt performance?
+What happens when a Singleton service depends on a Scoped service?
+
+How MediatR pipeline behaviors are wired ?
+How the refresh token rotation actually invalidates old tokens ?
+How do you implement Authorization in the ASP.Net Core API ?
+How do you deploy .NET Application to Azure APP Service ?
+What is Azure Storage. Difference between Blob Storage and Table Storage ?
+What is an Azure Service Bus, Why did you implement in your app ?
+How would you move a Monolithic .NET Application into a MicroService ?
+
+PERFORMANCE ISSUES
+
+CTE in SQL.

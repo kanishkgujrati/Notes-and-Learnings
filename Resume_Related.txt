@@ -1,0 +1,49 @@
+Analyze the attached resume strictly as a professional ATS/recruiter would during an actual hiring process.
+
+Be **brutally honest, objective, and professional**. Do not praise, flatter, sugarcoat, or try to impress me. Do not assume missing information is present.
+
+Give me:
+
+* **Overall Resume Score: /100**
+* ATS score and job-fit/shortlisting score
+* Key strengths and weaknesses
+* Missing keywords/skills
+* Red flags and likely rejection reasons
+* Formatting/content issues
+* Specific improvements that would materially increase shortlist chances
+* Final verdict: **Shortlist / Maybe / Reject**, with a clear reason.
+
+Judge it by real-world hiring standards, not by being encouraging.
+
+
+
+.NET, .NET Core, C#, TypeScript, Angular, Entity Framework Core, Entity Framework, LINQ, SQL Server, ASP.NET Core, SSIS, SSIS ETL
+
+
+Hi Sridevi,
+I hope you are doing well.
+
+I am writing to inquire about current job opportunities at LogiAngle for a Fullstack Developer position (.Net + Angular + SQL Server).
+
+I have attached my resume for your reference. I would appreciate it if you could review my profile and consider me for the suitable opportunity that match my skills and experience.
+
+SKILLS: C#, .Net core, ASP .Net Core, ASP .Net Web API, OOPS, LINQ and Entity Framework. Angular and Typescript.
+
+I would be happy to discuss my experience and suitability for the role further at your convenience.
+
+Thank you for your time and consideration. I look forward to hearing from you.
+
+
+Full Stack Software Engineer with 2+ years of experience in Enterprise Software Development, specializing in .NET 8, C#, Angular, 
+TypeScript, and SQL Server. Experienced in developing and maintaining enterprise applications, REST APIs, database-driven 
+solutions, and Web applications. Proven experience in Application Performance Optimization, improving rendering, loading and 
+overall application responsiveness through Code, Database, and Architectural optimizations. Hands-on experience with eESB 
+messaging, SSIS/ETL, HangFire, GitHub Actions, Docker and CI/CD. Strong foundation in OOP, SOLID principles, Design Patterns, 
+Dependency Injection, Clean Architecture, and System Design, with a focus on building Maintainable, Reliable, and Scalable 
+software solutions.
+
+
+Linkedin : https://www.linkedin.com/in/kanishk-gujrati-a45309224/
+
+
+Brady Technologies - Senior Software Engineer - Talk to Navaladi   https://bradyplc.bamboohr.com/careers/367?source=aWQ9NA%3D%3D     https://www.linkedin.com/jobs/view/4368999691/

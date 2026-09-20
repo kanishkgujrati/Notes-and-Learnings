@@ -1,0 +1,841 @@
+Design Patterns
+	Design patterns are reusable, proven solutions to common software design problems.
+	They are templates or best practices for organizing classes and objects to solve recurring design challenges.
+	Helps in Writing Clean and Maintainable code, Reduce code Duplication, Improve Flexibility and Scalability
+
+	CREATIONAL, STRUCTURAL, BEHAVIORAL Design Patterns.
+		CREATIONAL : Strategy (Behavior Variation), Simple Factory, Factory Method, Builder, Abstract Factory, Prototype, Singleton			(Object creation)
+		STRUCTURAL : Adapter, Facade, Decorator, Proxy, Composite, Bridge, Flyweight														(Object Connection)
+		BEHAVIORAL : Observer, Command, Chain of Responsibility, State, Template Method, Mediator, Iterator, Visitor, Memento, Interpreter(Rare (Object Communication)
+
+
+** For each of the Design Pattern Answer these questions :- 
+	1. What problem exists?
+	2. Why does that problem exist?
+	3. What responsibility is being moved?
+	4. Where is that responsibility moving?
+	5. What type of coupling is being reduced?
+	6. What new complexity are we introducing?
+	7. What tradeoff are we accepting?
+	8. Would I actually use this in production?
+
+
+Factory  →  Who creates the object?
+Builder  →  How do I construct a complex object?
+Adapter  →  How do I make incompatible objects work together?
+Decorator →  How do I add behavior without modifying the object?
+Facade   →  How do I simplify access to a complex subsystem?
+Proxy    → Control Access
+Composite → How do I treat an individual object and a group of objects uniformly?
+Flyweight → Share expensive common state
+
+====================================================
+	CREATIONAL PATTERNS		-	How objects are CREATED ?
+====================================================
+
+1. Strategy Pattern :- Define a family of algorithms, encapsulate each one in a separate class, and make them interchangeable at runtime.
+		Put each behavior into its own class so you can swap behaviors without changing the code that uses them.
+		
+		Teaches you Composition over Inheritance
+			
+			if (...){}					// Simple Factory - It violates the Open/Closed Principle (OCP). Every new payment method requires modifying already-tested code.
+			else if (...){}
+			else if (...){}
+			else {}
+		The PaymentService violates OCP because every new payment method forces us to modify the existing class instead of extending the system by adding a new implementation. 
+		Existing, tested code must change whenever business requirements change.
+		
+		Client
+			|
+		PaymentService
+			|
+		IPaymentStrategy
+		/      |       \
+    Credit   UPI    PayPal
+	
+	The PaymentService should coordinate the payment process, not implement every payment algorithm itself. Each payment algorithm belongs in its own class.
+	Instead of One class should know how to do everything, One class should know WHO should do the work.
+		If any Validations are required which are common for Payment can be done in Payment Service.
+	
+	Client  ➜  Factory  ➜  Strategy  ➜  Decorator  ➜  Observer  ➜  Repository
+
+2. Factory Pattern :- It is a creational design pattern that provides a way to create objects without exposing the object creation logic to the client.
+						Instead of using "new" directly, it asks a Factory to create the object.
+			
+			Factories exist because the knowledge required to create an object changes independently from the business logic that uses it.
+					
+				Problems Factory solves :- Client creates objects directly. ➜ Client becomes tightly coupled to concrete classes. ➜ Every new implementation requires modifying the client. ➜ Violates Open/Closed Principle.	
+					
+				Factory :-	Separate OBJECT CREATION from OBJECT USAGE. Client knows ONLY Factory. Factory knows concrete implementations.
+		
+		Advantages :- Less coupling, Better scalability, Better testability, Better maintainability, Easier dependency injection, Centralized object creation.
+
+	Factory should not have If Else or Switch Cases  (It is Simple Factory not Factory method Pattern)
+		In Simple Factory, every new type modifies the Factory. 
+
+	The Factory Method pattern relies on Inheritance and Polymorphism so new creators can be introduced without modifying the existing creator.
+		Every product knows its own factory.
+	
+	Interface (IExporter)
+	➜  Concrete products Inheriting Interface (PDFExporter : IExporter)
+	➜	Creator (Factory Method begins)
+			public abstract class ExporterFactory
+			{
+				public abstract IExporter CreateExporter();
+			}
+	➜ 	Concrete Factories
+			public class PdfExporterFactory : ExporterFactory
+			{
+				public override IExporter CreateExporter()
+				{
+					return new PdfExporter();
+				}
+			}
+	➜	Client
+			ExporterFactory factory = new PdfExporterFactory();
+			IExporter exporter = factory.CreateExporter();
+			exporter.Export("Sales Report");
+
+	** Factory Method is NOT commonly written directly in modern ASP.NET Core applications. Because the Dependency Injection container often becomes the factory.
+		services.AddScoped<IExporter, PDFExporter>();  // The DI container creates the object. Container acts as the factory.
+		
+	ASP.NET Core's DI container already acts as a configurable object factory, so manually implementing Factory Method usually duplicates functionality already provided by the framework. 
+		I would only implement Factory Method myself if object creation required business-specific logic that DI couldn't express cleanly.
+	Modern DI sometimes replaces Factory. Register multiple Services with the same Interface and IEnumerable<Interface> and then choose Provider at the runtime.
+
+* Design Principles :- 
+	1. Design for the changes you expect, not the changes you can imagine. If the set of implementations is stable and unlikely to change, a Simple Factory is often a pragmatic solution.
+
+
+3. Dependency Inversion Principle (DIP) :- High level Modules should depend on Abstraction rather than Concrete Implementation.
+			Without DIP : OrderService ➜ FileLogger
+				Business depends on implementation
+			
+			With DIP : ILogger
+					   ↑      ↑
+				FileLogger   SqlLogger
+						↑
+					OrderService				Business depends only on abstraction. Implementations depend on abstraction.
+					
+		example :- public interface IExporter { void Export(); }
+			public class PdfExporter : IExporter { public void Export() { Console.WriteLine("Exporting PDF"); } }
+			public class ExcelExporter : IExporter { public void Export() { Console.WriteLine("Exporting Excel"); } }
+			
+		Constructor of ReportService public ReportService(IExporter exporter) { _exporter = exporter; }	
+		
+		services.AddScoped<IExporter, PdfExporter>();  OR  services.AddScoped<IExporter, ExcelExporter>();
+		services.AddScoped<ReportService>();
+		
+		Application starts ➜ DI Container is configured  ➜  IExporter → PdfExporter  ➜  Someone requests ReportService  ➜  DI Container creates PdfExporter  ➜  DI Container calls
+			new ReportService(new PdfExporter()) ➜  ReportService stores it in _exporter  ➜  ReportService.Export()  ➜  _exporter.Export()  ➜  PdfExporter.Export()
+
+	* A single IExporter dependency receives one implementation (typically the last registered in ASP.NET Core DI). To receive multiple implementations, inject IEnumerable<IExporter> or AddKeyedScoped/Transient/Singleton.
+		
+		services.AddKeyedScoped<IExporter, PdfExporter>("pdf");
+		services.AddKeyedScoped<IExporter, ExcelExporter>("excel");			// Same Interface registered twice with different Classes using Keyed 
+		
+		// Report Service
+		private readonly IExporter _exporter;
+		public ReportService([FromKeyedServices("pdf")] IExporter exporter) { _exporter = exporter}
+
+
+** Services are of 2 types :- 
+	1. Orchestrator :- Workflow  ➜  Validation  ➜  Calling services  ➜  Saving  ➜  Publishing  ➜  Notifications
+			They coordinate.  (Controllers)
+	2. Worker :- One Job ➜ Return results
+			They execute.  (Services)
+	Repositories persist.
+		eg :- Hangfire :- Job ➜ Orchestrates  Services ➜ Execute
+
+						OrderService 
+							|
+						PaymentService					// Orchestration - Logging, Validate User, Validate Amount, Get Strategy, Save Transaction, Send Email(publish an event)
+			------------------|-------------------
+			|                 |                  |
+	| CreditCard     | | UPI            | | Stripe         |
+	| Strategy       | | Strategy       | | Strategy       |
+	+----------------+ +----------------+ +----------------+
+	| Call Provider  | | Call Provider  | | Call Provider  |
+	| Return Result  | | Return Result  | | Return Result  |
+
+
+4. Builder :- It is a creational design pattern that lets you construct complex objects step by step. Builder only cares about construction.  HOW is the object assembled?
+		It separates how an object is built from what the object is, making it easier to create different versions of the same object.
+		Builder solves construction complexity (Mandatory & Optional Fields, Validation). Builder makes Object Creation simple, readable and maintainable.
+
+		Without Builder : - var email = new EmailRequest("a@company.com","b@company.com","Welcome","Hello",true,false,true,false);
+
+		var email = new EmailBuilder().From("a@company.com").To("b@company.com").Subject("Hello").Body("Body").EnableHtml().TrackOpens().AddAttachments(files).Build();
+			It creates a EmailBuilder, stores the values in specific key of builder.
+			Build() becomes the gatekeeper. - It creates and returns the final object after object is configured.  Creates the object only when it's complete. Can validate required fields. Can make the final object immutable (can't be changed after creation).
+
+	Makes object creation readable, Avoids constructors with many parameters, Allows optional parameters without many constructor overloads.
+	
+	* C# already has Object Initializers.  var employee = new Employee { FirstName = "Kanishk",LastName = "Gujarati",Department = "Engineering" };
+		Builders exist because object initializers cannot enforce complex construction rules. (Build())
+		Builder can centralize rules in the Build(), object initializer can't naturally guide or validate a multi-step construction process.
+	
+	** Asp.Net Core has WebApplicationBuilder		var builder = WebApplication.CreateBuilder(args);	builder.Services.AddControllers();		var app = builder.Build();
+	
+	Factory : "What object should be created?"
+	Builder : "How should the Object be created and assembled?"		Assemble Objects, Validate data, Calculate Values, Construct Aggregates
+
+	
+
+5. Abstract Factory Pattern :- Product should support multiple databases.
+									SqlServer (SqlConnection, SqlCommand, SqlTransaction, SqlParameter) & PostgreSQL (NpgsqlConnection, NpgsqlCommand, NpgsqlTransaction, NpgsqlParameter)
+
+	Each factory creates an entire family.
+	
+	Factory Method asks : What object should I create?
+	Abstract Factory asks : What FAMILY of objects should I create?
+	
+		When do we Use Abstract Factories - Multiple related objects must always work together, Families should never be mixed, You want to switch the whole family at once.
+		When to avoid this - If creating only one object. If there are no related families. If adding another abstraction adds more complexity than value.
+		
+		Advantages :- Families remain consistent, Supports OCP, Centralizes creation of related objects, Easy to swap implementations.
+	
+	Don't introduce abstractions before they're needed. If only the very few things change, Abstract Factory is overengineering.
+
+	The ASP.NET Core DI container is itself a giant Abstract Factory.
+
+
+Strategy 		 ➜  Move Behavior
+Simple Factory   ➜  Creates ONE object. Move OBJECT CREATION
+Factory Method   ➜  Delegates creation of ONE object using Inheritance.
+Builder  		 ➜  Builds ONE complex object. Everything contributes to producing one finished object. Move Object Assembly.
+Abstract Factory ➜ Creates MULTIPLE RELATED OBJECTS related to a Family. Focuses on multiple independent objects. The objects are not assembled into one object. They remain separate.
+
+
+	Factories can be STATELESS or STATEFUL.
+		STATELESS Factory would not remember anything, every call depends on the inputs. Each of the Factory instance created would behave exactly the same (Identical).
+		STATEFUL Factory - Each instance owns different state. Two factories are no longer equivalent.
+		
+		If SqlFactory is registered as a Singleton through ASP.NET Core DI, then the DI container will create one shared instance and reuse it whenever it resolves IDatabaseFactory.
+		When resolved through the DI container, registering it as Singleton means all consumers receive the same instance.
+	
+	GOOD FACTORIES :- Stateless, Lightweight, Only create objects, No business logic, No side effects, Easy to register as Singleton
+
+
+6. Prototype Pattern :- This pattern creates new objects by copying (cloning) an existing object instead of creating them from scratch.
+		Useful When :- Creating an object is expensive or time-consuming. To avoid repeatedly initializing similar objects. Many objects with the same initial state.
+		Disadvantages :- Cloning complex objects can be difficult. Shared references in shallow copies can introduce bugs.
+
+		Employee emp1 = new Employee		// new Employee and new Address creates an object instance
+		{
+			Name = "Kanishk",
+			Department = "Engineering",
+			Address = new Address { City = "Bangalore", State = "Karnataka" }
+		};
+		Employee emp2 = emp1;				// 1 Employee object 1 Address object, 2 Variables emp1 and emp2 but only 1 Employee Object.  It creates another reference.
+
+	There are 2 types of Copying: Shallow and Deep
+
+		Shallow Copy - Only the top-level object is copied. Nested objects are shared.  (Value type fields are copied and Reference type fields are shared)  FAST and CHEAP
+		Deep Copy - Everything is copied. Two completely independent graphs.			(All Value type and Referenc type are duplicated)
+			If no reference type fields in the Object Shallow Copy and Deep Copy are exactly the same for this case.
+
+	var b = a; 				// If a is a value type, the value is copied. If a is a reference type, only the reference is copied.
+	var b = a.Clone(); 		// clone() method is called on the object a and assigns the result to b.  (Exact behavior of Clone() is dependant on its implementation It can be Shallow or Deep)
+
+		public Employee Clone() { return (Employee)MemberwiseClone(); }		// MemberwiseClone performs a Shallow Copy of Objects (creates new Value type Objects and shares Reference Type fields)
+	
+	For Deep Copy of all the attributes of Employee type , we have to update the clone method individually for each attribute's clone logic.
+	It would be very complicated and difficult to maintain the clone method in future for new attributes. NOT SCALABLE & MAINTAINABLE.  Violates SRP.
+
+	Each object should know how to clone itself.
+		public Employee Clone()									// Employee no longer knows how to copy an Address. It simply delegates to each of the attribute's own Clone method.
+		{
+			Employee clone = (Employee)MemberwiseClone();
+			clone.Address = Address.Clone();					// Address Object as its own Clone method which is being used here. Address Object owns that responsibility.
+			return clone;
+		}
+	
+	** Prototype Pattern answers  Who owns copy logic? - The object itself.
+	
+	* In modern C#... We rarely implement Prototype, Because today we have: record types with expressions, serialization-based cloning, mapping libraries (AutoMapper), copy constructors, Immutable objects.
+	DDD (Domain-Driven Design) :- Does this object have its own identity?  YES  ➜ Usually DON'T clone it. Reference the same entity.
+																			NO  ➜ It's a value object. Clone it if necessary.
+
+
+
+7. Singleton Pattern :-  Ensuring that exactly one shared instance exists and providing a global point of access to it.
+
+	Singleton is probably the most abused design pattern in software engineering.
+
+		public class ApplicationConfiguration {							//  Should there be 100 copies of this object? NO, Every service should read the same configuration.
+			public string ConnectionString { get; set; }
+			public string JwtSecret { get; set; }
+			public string ApiBaseUrl { get; set; }
+		}
+		Logging Service - Should every class create its own logger instance? NO, One shared instance makes sense.
+
+	Singleton Services (Only ONE Instance) is useful in cases like :- Shared configuration, Shared cache, Coordination, Expensive initialization, Unique resource.
+
+	Classical example : ConfigurationManager, SharedDataService
+
+	** Modern .NET rarely uses the classic Singleton pattern.
+		services.AddSingleton<IConfigurationProvider, ConfigurationProvider>(); 	// Then consume it later in constructors
+		
+	| GoF Singleton                    | DI Singleton                   |
+	| -------------------------------- | ------------------------------ |
+	| Class controls its own lifetime  | DI container controls lifetime |
+	| Global access through `Instance` | Dependency Injection           |
+	| Hidden dependency                | Explicit dependency            |
+	| Harder to test                   | Easy to mock                   |
+	| Tight coupling                   | Looser coupling                |
+		
+	When to use Singleton - Truly shared application-wide state. Expensive initialization. Thread-safe shared caches.
+	
+	** There is a fundamental difference between a class implemented as a Singleton and an instance managed as a singleton by a DI container.
+	
+	Singelton pattern : Class itself is entirely responsible for controlling its own instantiation and ensuring only one instance ever exists within the application domain.
+							Private Constructor, Static Instance Variable
+			The class enforces that only one instance can ever exist (private constructor + static getInstance()). A lass implemented as a Singleton
+
+	DI Container Singleton : AddSingleton, Service is a ordinary C# class. Instead, the DI container (the IoC container) enforces the singleton behavior externally. An instance managed as a Singleton by the DI Container.
+			The framework creates one shared instance, but the class itself doesn't know or care. It remains easy to test and replace.
+				Modern ASP.Net Core, Spring, etc strongly prefer DI Singleton. 
+				(Even though there is one object, multiple threads can call its methods at the same time. All threads can execute concurrently on the same instance.)
+					➜ For Stateless service (Safe) - Each thread has its own stack.
+					➜ For Mutable field (Not safe)
+	
+	* A GoF Singleton is more appropriate when the object truly represents a unique system-wide resource. Configuration manager, License manager, Application-wide Cache.
+
+
+====================================================
+	STRUCTURAL PATTERNS		-	How objects are CONNECTED together ?
+====================================================
+
+SDK - Software Development Kit (Libraries, APIs, Documentation)
+
+1. Adapter Pattern :- Adapter converts one interface into another without modifying either side. Adapter knows both the ends (They dont know each other's existence).
+					Adapters are generally added between an Application Service and some external service, so that the adapter can make the external Service compatible with the Application Service.
+					No need of modifying either the external API or the Application Service. It wraps existing classes instead of modifying them and translates requests between incompatible interfaces.
+
+	When to Use:  Third-party SDKs ,Legacy systems ,External REST APIs ,Different interfaces ,You cannot modify existing code.
+		If both interfaces are in the same Application, Then we should not use Adapter and can simply upate any of them.
+
+	Follows OCP: Decouples application from third-party libraries, Centralizes translation logic. (When a new provider is added, I extend the system by adding a new adapter implementation instead of modifying existing adapters or business services.)
+	Follows SRP: The adapter has exactly one reason to change: when the third-party provider's contract changes
+	
+	Adapter is Wrapper or Translation Service. It reduces coupling, making it easier to replace the SDK in the future.
+
+	Adapter vs Strategy - 
+		Adapter converts one interface into another that the client expects. Wraps an existing class. When you cannot change an existing class or third-party library.
+			Adapter converts an incompatible interface into the interface expected by the client. Adapter solves a Structural problem. "Adapter Changes INTERFACE"
+		Strategy Encapsulates multiple algorithms behind a common interface. Client chooses what strategy to use.
+			Strategy solves a Behavioral problem. "Strategy Changes BEHAVIOR"
+
+	Adapter + Third-Party SDK: An Adapter isolates the application from the SDK by translating interfaces, reducing coupling and making the SDK easy to replace.
+
+	Does Adapter modify existing classes? No. It wraps existing classes instead of modifying them and translates requests between incompatible interfaces.
+	
+	Can Adapter and Factory be used together?  Absolutely. When we have multiple Adapters, Factory decides which adapter to create. Adapter decides how to translate.
+
+
+
+** Example with all Patterns covered till now.
+	Client ➜ NotificationController ➜ NotificationService ➜ Validation ➜ NotificationProviderFactory ➜ Returns EmailAdapter ➜ EmailAdapter ➜ Email SDK ➜ Success ➜ Log ➜ Publish RabbitMQ Event
+	
+	Open/Closed Principle: Add a new provider by creating a new Adapter and register with Factory.
+	Single Responsibility Principle: Service: Orchestrates the workflow. Factory: Chooses the provider. Strategy/Adapter: Sends through a specific provider. SDK: Performs the actual communication.
+	Loose Coupling
+
+| Problem                                                      | Solution                                                                 | Pattern                                     |
+| -------------------------------------------------------------| ------------------------------------------------------------------------ | --------------------------------------------|
+| Different notification SDKs expose different APIs            | Wrap each SDK with a common interface (`INotificationProvider`)          | *Adapter                                    |
+| User chooses Email, SMS, Slack, or Teams at runtime          | Select the appropriate implementation dynamically                        | *Strategy                                   |
+| Avoid `if-else` or `switch` statements for provider creation | Return the correct provider based on notification type                   | *Factory                                    |
+| Validate recipient, message, permissions, etc.               | Perform validation before sending                                        | *Service Layer (Business Logic)             |
+| Execute the notification workflow                            | Orchestrate validation → provider selection → send → log → publish event | *Service Layer                              |
+| Record success/failure and execution details                 | Centralize logging in the service                                        | *Cross-cutting Concern / Service Layer      |
+| Notify other services after sending                          | Publish `NotificationSent` event to RabbitMQ                             | *Publisher–Subscriber(Event-Driven/Observer)|
+
+
+
+	** VERY IMPORTANT
+2. Decorator Pattern :-  To add new behavior or responsibilities to an object dynamically without modifying its existing code. Wrapping an object with additional functionality.
+		Decorator Pattern allows you to add new functionality to an object by wrapping it inside another object that implements the same interface, without changing the original object's code.
+	Decorator — a chain of components wrapping one another.
+	
+	Most common Pattern. Used in ASP.NET Core Middleware ,Caching ,Logging ,Retry policies (e.g., Polly) ,Authorization ,Validation pipelines (e.g., MediatR behaviors)
+	
+	DECORATOR SOLVES: How do we ADD RESPONSIBILITIES to an existing object WITHOUT modifying its code and WITHOUT creating huge inheritance trees?
+						How do I keep adding features around an object without touching it?
+	
+	Without Decorator : EmailNotificationService  ➜  Need Logging  ➜  LoggingEmailNotificationService  ➜  Need Retry  ➜  RetryLoggingEmailNotificationService  ➜  
+							Need Metrics  ➜  MetricsRetryLoggingEmailNotificationService  ➜  Need Audit  ➜  AuditMetricsRetryLoggingEmailService
+		Inheritance Explosion ❌
+	
+	services.Decorate<IEmailService, LoggingEmailService>();    // Scrutor Library, We wrap inside a LoggingEmailService, Logging or retries can now be added to EmailService without ever modifying the actual Service.
+	
+	In the Decorator Pattern, both the original object and every decorator implement the same interface. 
+	The decorator wraps another object of that interface, adds behavior before or after delegating the call, and remains interchangeable with the original object.
+	
+	The decorated object and the decorator both implement the same interface. That's why they are interchangeable.
+	
+		Client depends on an Interface.
+		Both 1. Original Object and 2. Decorator implement the SAME interface.
+		Decorator stores another object implementing the SAME interface.
+		It performs extra work BEFORE and/or AFTER delegating the call.
+		Client never knows the difference.
+	
+	Asp.NET Core example :- Middlewares (Req ➜ Middleware ➜ Endpoint). Each Middleware receives the request, does some work and calls the next middleware.
+	
+		public interface INotificationService { Task SendAsync(Notification notification); }
+		
+		public class EmailNotificationService : INotificationService {
+			public async Task SendAsync(Notification notification)
+			{
+				Console.WriteLine($"Sending email to {notification.Recipient}");
+				// Actual email provider/API call
+				await Task.CompletedTask;
+			}
+		}
+		
+		public class LoggingNotificationDecorator : INotificationService {
+			private readonly INotificationService _inner;
+			public LoggingNotificationDecorator(INotificationService inner) { _inner = inner; }
+
+			public async Task SendAsync(Notification notification) {
+				Console.WriteLine($"Starting notification for {notification.Recipient}");		// Logging
+				await _inner.SendAsync(notification);											// Email Notification Service
+				Console.WriteLine($"Notification completed for {notification.Recipient}");		// Logging
+			}
+		}
+		INotificationService service =  new EmailNotificationService();
+		service =  new LoggingNotificationDecorator(service);
+		service =  new RetryNotificationDecorator(service);
+
+			LoggingDecorator  --Log Start-->  EmailNotificationService  --Send Email-->  LoggingDecorator  -->  Log Complete  --> END
+	
+	* Add responsibilities/behavior to an existing object dynamically without modifying its class.
+
+
+3. Facade Pattern :- Facade provides a simple, high-level interface over a complex subsystem.  Facade actually just orchestrates complex multiple business logic implementation.
+						Client does not need to know the internal subsystem interactions.
+		Facade ➜ Hides complexity (It does not remove the Complexity)  The Facade coordinates multiple components and exposes a simpler API.
+		
+		A Facade is particularly useful when you're exposing a simplified entry point to a complex subsystem.
+		
+		When to Use :- A subsystem has many components. Clients shouldn't know internal details. You want a simple entry point. Internal subsystem interactions are complex.
+		
+			public async Task<IActionResult> Checkout(CheckoutRequest request)
+			{
+				await _cartService.ValidateAsync(request.CartId);
+				await _inventoryService.ReserveAsync(request.Items);
+				var price = await _pricingService.CalculateAsync(request);
+				var discount = await _discountService.CalculateAsync(request);
+				await _paymentService.ProcessAsync(price - discount);
+				var order = await _orderRepository.CreateAsync(request);
+				await _notificationService.SendAsync(order);
+				await _eventPublisher.PublishAsync(order);
+				return Ok(order);
+			}
+			// When the Controller becomes very complex, Tightly Coupled and messy.  Controller slowly becomes an "Orchestration Monster."
+
+	Adapter
+		→ Compatibility
+		→ Converts one interface to another
+	Decorator
+	→ Adds behavior
+	→ Wraps one component
+
+	Facade
+		→ Simplicity
+		→ Provides simple interface over complex subsystem
+
+
+	Facade should only simplify a complex subsystem. If Facade becomes extremely large then the Facade is probably becoming a GOD OBJECT.
+
+
+
+4. Proxy Pattern :- Client �  ➜ ������ Proxy ➜ Real Object   The Proxy controls access to the real object.
+	(Control Access)
+			Decorator adds responsibilities. Proxy controls access.
+
+	Proxy provides a substitute/representative for another object and controls access to the real object.
+	Problem it solves: Need to control access to or represent another object.
+	
+	Types of Proxies : -
+		1. Protection Proxy - Authorization, Permissions, Security
+		2. Virtual Proxy    - Controls expensive object creation.
+		3. Remote Proxy		- The real object exists somewhere else.
+		4. Caching Proxy	- Cache HIT → return, Cache MISS → Real Service
+	
+	Proxy and Decorator - Both are very similar Client → Wrapper → Real Object
+		Decorator → Enhances behavior
+		Proxy 	  → Controls access
+	
+	When to use Proxy - Access control, Lazy Initialization, Remote access abstraction
+
+
+
+5. Composite Patteren :- A single object and a collection of objects can be treated through the same interface. Need to treat individual objects and groups of objects uniformly.
+		
+		Composite is used when we have a hierarchical/tree structure and want to treat individual objects and groups of objects uniformly.
+
+	List<IComponent>  - List of Interface, List<IComponent> is what makes the Composite recursive, because the child collection is typed against the common abstraction, the child can itself be another Composite.
+	
+	Define a common interface for: Leaf & Composite
+		Composite contains multiple Components. Client interacts with Component interface.
+	Leaf:→ Performs operation on itself.
+	Composite: → Performs operation on its children, often recursively.
+	
+	When to Use Composite:- Data naturally forms a tree. Objects contain other objects of the same abstraction. Recursive Hierarchy, Parent/Child
+	
+	Composite IS-A Component
+	Composite HAS-A collection of Components
+
+
+
+
+6. Bridge Pattern :- Bridge separates an abstraction from its implementation so that both can vary independently.
+		ONE abstraction + ONE implementation dimension
+	
+	Problem: Two dimensions of a system can vary independently. Inheritance combines the dimensions and causes class explosion.
+				When two independent dimensions are represented through inheritance, the number of combinations grows multiplicatively.
+	Solution: Separate the dimensions and connect them using Composition.
+	
+	Application Service
+       ↓
+	IRepository
+		   ↓
+	SqlRepository
+	PostgresRepository
+	MongoRepository
+	
+	Not every interface + implementation relationship is automatically the Bridge Pattern.
+
+
+
+Problem                         Pattern
+
+Object creation                Factory
+Complex object construction    Builder
+Compatibility                  Adapter
+Access control                 Proxy
+Add behavior                   Decorator
+Simplify subsystem             Facade
+Tree hierarchy                 Composite
+Independent dimensions         Bridge
+Interchangeable algorithms     Strategy
+
+
+7. Flyweight Pattern:- 
+	
+	Problem - What if we have millions of objects, and many of them contain the same data? Huge number of similar objects consume excessive memory.
+		Each character object contains: Character, Font, FontSize, Color, Position
+		If every character stores its own font/color/style objects, memory usage becomes enormous.
+
+	Huge number of similar objects consume too much memory.
+	
+	Flyweight asks: What state actually needs to be unique, and what state can be shared? Share common immutable state between objects.
+		INTRINSIC STATE: Shared, Same across many objects
+		EXTRINSIC STATE: Unique, Passed from outside when needed
+	
+	Create Immutable and Shared Objects. No Setters.
+	Share common intrinsic state instead of storing duplicate copies in every object.
+
+
+
+1. Only managers can refund orders.						-		Proxy,		It can check whether the caller is a manager before forwarding the refund request. It controls access to the real refund service.
+2. Every payment operation must be logged.				-		Decorator,	Wrap the payment service with a logging decorator that logs every operation, while leaving the original payment implementation unchanged.
+3. Stripe SDK's API doesn't match our IPaymentGateway.	-		Adapter,	An adapter converts Stripe's API into the IPaymentGateway interface expected by your application.
+4. Controller should not coordinate Payment, Inventory,	-		Facade,		A facade provides one simple interface for the controller, hiding coordination among Payment, Inventory, Email, and Audit services.
+   Email and Audit services directly.
+5. Payment should retry when Stripe temporarily returns 503. -	Decorator,	Retry is additional behavior around the operation.
+6. Tomorrow Stripe may be replaced by Razorpay.			- 		Adapter,	Put Stripe and Razorpay behind the same IPaymentGateway interface using adapters, so the application doesn't depend directly on either SDK.
+
+	OrderController  ➜  OrderFacade  ➜  OrderService  ➜  AuthorizationProxy  ➜  RetryDecorator  ➜  LoggingDecorator  ➜  PaymentService  ➜  IPaymentGateway  ➜  StripeAdapter / RazorPayAdapter
+
+============================================================
+STRUCTURAL PATTERNS — QUICK REVISION
+============================================================
+
+ADAPTER
+Question: "How do I make incompatible interfaces work together?"
+Intent: Compatibility
+Example: Application ← Adapter → Third-party SDK
+
+BRIDGE
+Question: "How do I allow two independent dimensions to vary?"
+Intent: Separate independent dimensions
+Example: Notification → Provider
+
+COMPOSITE
+Question: "How do I treat individual objects and groups uniformly?"
+Intent: Tree structures
+Example: Company → Teams → Employees
+
+DECORATOR
+Question: "How do I add behavior without modifying the original?"
+Intent: Add behavior dynamically
+Example: Logging → Retry → Payment
+
+
+FACADE
+Question: "How do I simplify access to a complicated subsystem?"
+Intent: Simplification
+Example: OrderController → OrderFacade → Multiple Services
+
+
+FLYWEIGHT
+Question: "How do I reduce memory when many objects share state?"
+Intent: Memory optimization / shared state
+Example: Millions of particles → shared ParticleType
+
+
+PROXY
+Question: "How do I control access to another object?"
+Intent: Access control / controlled interaction
+Examples: Authorization, Lazy Loading, Remote Proxy, Caching Proxy
+
+
+
+
+============================================================
+	BEHAVIORAL PATTERNS  -  
+============================================================
+
+Chain → Pass one request through handlers    → Who should handle this request?
+Observer → One event, many interested consumers   → Who should be notified?
+Command → Represent an operation as an object     → How can I represent this operation?
+State → What should this object do in its current state?    → What should this object do in its current state?
+Template Method → What workflow is fixed while some steps vary? → stable workflow + customizable steps
+
+1. Chain of Responsibility Pattern :- Who should decide which handler processes the request, and how do we avoid hard-coding all those steps together ?  Who should handle this request?
+		Give a request to a chain of handlers, where each handler decides whether to process the request, reject it, or pass it to the next handler.
+
+	ASP.NET Core Middleware is essentially a real-world application of the Chain of Responsibility concept.
+
+	Multiple objects may need to process the same request, but the sender shouldn't need to know which object should handle it.
+		Request  ➜  Handler 1  ➜  Handler 2  ➜  Handler 3  ➜  Handler 4  ➜  Handler 5
+
+	authentication
+		.SetNext(authorization)
+		.SetNext(validation)
+		.SetNext(payment);
+	
+	When to use:- 
+	+ Multiple handlers may process a request
+	+ Processing order matters
+	+ Sender shouldn't know specific handler
+	+ Handlers can pass responsibility
+	+ Handlers may short-circuit
+	+ Chain changes independently of handlers
+	
+	A handler either handles/terminates the request or explicitly passes it to the next handler.
+	
+	Use the chain configuration to express workflow differences, rather than putting workflow-selection logic inside every handler.
+	
+	**Decorator is primarily about wrapping an object to add behavior before/after the same operation, 
+			whereas Chain of Responsibility is about passing a request through handlers where each handler decides whether to handle it or pass it onward.
+
+
+
+2. Observer Pattern :- In-process events,  One object changes state/event occurs.
+	
+	One object/event needs to notify multiple interested objects without directly coupling the publisher to all subscribers.
+
+		When an order is placed: Send confirmation email, Update inventory, Notify analytics, Create audit record, Update loyalty points, Send notification
+	
+	The publisher doesn't need to know the individual logic of each subscriber. That's Observer.
+		Instead of the publisher directly knowing every subscriber, subscribers register themselves. One-to-many dependancy.
+	
+	The publisher depends on the event/observer abstraction, not on concrete subscribers.
+	
+	OrderService ➜ Order Created  ➜  Post creation Handlers  (The OrderService no longer needs to know the individual subscribers.)
+		OrderCreated
+		 |
+		 +--> EmailObserver
+		 +--> InventoryObserver
+		 +--> AuditObserver
+
+	New Observer is added, Existing publisher and observers remains unchanged.: 
+	
+	C# Events: public event EventHandler<OrderCreatedEvent>? OrderCreated;
+		Subscriber: orderService.OrderCreated += HandleOrderCreated;
+
+	Observer vs RabbitMQ - Observer is In-Process. Everything is typically in the same process. The publisher directly invokes subscribers.
+	Rabbit MQ Pub/Sub, Broker mediates delivery. It is a distributed messaging architecture.
+	Both share the same one-to-many event-distribution.
+
+
+
+3. Command Pattern :- Encapsulate a request/operation as an object.  (queued, scheduled, logged, retried, audited, serialized)
+
+	Command
+    |
+    +---- contains request/data
+    |
+    +---- knows how to execute the operation
+	
+	Each Command must represent a distinct operation/business intent.
+	
+	Client ➜ Execute() ➜ ICommand ➜ Concrete Command ➜ Receiver    -   ICommand, Concrete Command, Receiver, Invoker
+		Command: Represents the operation. → Defines Execute()
+		Receiver: Actually performs the work. → Contains actual business logic
+		ConcreteCommand:
+			→ Stores request/data
+			→ Knows which Receiver to call
+		Invoker:
+			→ Executes the Command
+			→ Doesn't need to know implementation details
+	
+	Hangfire example: BackgroundJob.Enqueue(() => orderService.PlaceOrderAsync(request));  //the operation is being captured so it can execute later.
+	CQRS Connection: Command -> Handler -> Execute   // Command Oriented Arch  - MediatR commonly uses this style.  	Command Query Responsibility Segregation.
+	
+	** Represent work as something that can be scheduled and executed separately from the caller.
+	
+	When to use: + Need to queue work + Need delayed execution + Need retries + Need audit/history + CQRS-style application
+
+
+4. State Pattern :- What if the state itself owned the behavior instead of the Order class constantly checking its status?
+						The behavior of the object changes significantly based on its current state.
+	
+	An object's behavior changes significantly based on its current state.
+	
+	Instead of putting all state-dependent behavior inside one giant class, move the behavior into separate state objects.
+		Context ➜ Current State ➜ State-specific behavior
+		
+	The object delegates behavior to an object representing its current state.
+	
+	State-specific behavior moved from the Context into the corresponding State objects.
+	
+	State vs Strategy: The class structures can look almost identical.
+		Strategy: The client/context chooses which algorithm to use.  
+			A Strategy represents a behavior you choose to perform
+			Strategy is usually selected by the client/application.
+		State: The object's current state determines the behavior. The state can change the Context's state. 
+			A State represents the current condition of an object that determines what behaviors are currently valid.
+			State is selected/transitions as part of the object's lifecycle.
+
+	Advantages: Removes large state-based conditionals. Localizes state-specific behavior. Makes state transitions explicit.
+	
+	New States can be added without modifying the existing state classes. Each state should own the behavior relevant to its own condition and define its valid transitions.  (OCP)
+	
+	When to Use:   Enum + substantial state-dependent behavior → Potential State Pattern
+		- Object's behavior meaningfully changes based on its current state. 
+		- State-specific behavior is currently scattered across lots of if/switch statements.
+		- Each state has a reasonably coherent set of responsibilities.
+		- The lifecycle itself is important to the domain. 
+		- Invalid transitions need explicit enforcement.
+	
+	Current State  ➜  Operation  ➜  State-specific rule  ➜  Next State
+
+
+
+5. Template Method :- 
+	
+	Problem: Several implementations follow the same overall workflow, but some individual steps vary.   Workflow is Fixed but some specific thing differs. (Processing or Authentication, etc.)
+		Do Not duplicate the Worflow. Real Problem is the Duplicated Code.
+	
+	Implementing Template Method
+		➜ Define the skeleton of an algorithm in a base class.
+		➜ Some steps are implemented by the base class.
+		➜ Some steps are allowed to vary in subclasses.
+		➜ The overall algorithm/order remains controlled by the base class.
+	
+	The parent defines the algorithm skeleton.
+	Subclasses customize certain steps.
+	
+	Strategy
+		→ Runtime Composition
+		→ Entire behavior can be swapped
+		We can potentially change the strategy at runtime.
+	Template Method
+		→ Compile-time Inheritance str
+		→ Skeleton fixed, steps customized
+		The implementation is determined by the object's concrete class. No Dynamic changes.
+	
+	Template Method uses inheritance to define a fixed algorithm skeleton while allowing subclasses to customize individual steps.
+	Strategy uses composition to encapsulate interchangeable behaviors and gives the caller more flexibility over which implementation is used.
+		I prefer Template Method when the workflow itself is stable and common across implementations;
+		I prefer Strategy when the behavior or algorithm varies more fundamentally or needs runtime substitution.
+	
+	When to Use:
+		+ Multiple implementations follow the same algorithm. InVariant Steps.
+		+ Order of steps must remain fixed
+		+ Some steps vary
+		+ Some steps are common
+		+ You want to prevent subclasses from changing the workflow.
+		
+	Template Method is appropriate when subclasses vary the steps, but not the overall ordering/structure of the algorithm.
+	Overriding a step is normal Template Method behavior. Overriding the template itself to change its structure undermines the pattern.
+	Template Method works when the workflow is stable and the variation is local.
+	
+	Major Possible Issue :- Changing the base algorithm can affect every subclass. Uses inheritance. Base class and subclasses are Tightly-coupled.
+	
+	Modern Applications prefer Strategy + Composition (Unless Inheritance provides some real major benefit).
+		When variation starts affecting the workflow itself, Strategy/composition usually becomes more attractive.
+	
+		REQUIREMENT											GOOD FIT
+		Same ordering, different implementation of steps  -	Template Method
+		Different ordering/algorithm					  -	Strategy / workflow composition
+		Optional steps but same general ordering		  -	Template Method + hooks
+		Arbitrary configurable sequences				  -	Pipeline / composed steps
+	
+	
+	Composition - Template Method, behavior is more tightly coupled to the inheritance hierarchy.  Strategy can choose from interchangeable behaviors.
+	Inheritance - Template is better but with limitation of variable Sequencing.
+	Runtime Flexibility - Strategy is strongly better, Strategy can be selected at runtime. Class Instantiation decides behavior.
+	Shared workflow - If every payment must follow the same sequence then Template is strongest.
+	
+
+6. Mediator Pattern :-  Instead of everyone talking to everyone, components communicate through a central mediator.
+		Mediator reduces peer-to-peer coupling, but a badly designed Mediator can become a God Object.
+	
+	Problem: Every service knows about other services. Adding one new component may require changing several existing components.
+				Multiple components communicate directly with one another, creating many-to-many dependencies.
+	
+	Solution: Introduce a central Mediator. Components communicate through the Mediator instead of directly with each other.
+		Mediator centralizes communication, not necessarily business logic.
+			The Mediator exposes communication operations, not random utility methods.
+	
+	PaymentService
+      |
+      v
+	OrderMediator
+      |
+      +----> InventoryService
+      |
+      +----> NotificationService
+	
+	Mediator should centralize COMMUNICATION. It should NOT become the place where all BUSINESS LOGIC lives.
+	It should not become a GOD Object by having tooo many dependencies, all business logic and very complex code.
+	
+	Mediator vs Facade
+		Facade: Give the client a simpler interface. The Facade usually has an external client calling it.
+			→ Simplifies subsystem access for a client.
+			→ Hide complexity from the client.
+		Mediator: Coordinate communication between peer components. Components themselves communicate through the Mediator.
+			→ Reduces peer-to-peer communication between components.
+			→ Reduce direct coupling between collaborating components.
+	
+	MediatR:  Controller ➜ MediatR ➜ PlaceOrderCommandHandler
+	
+	When to use Mediator: 
+		+ Many peer components communicate with each other
+		+ Dependencies are becoming many-to-many
+		+ Communication rules need central coordination
+		+ Components shouldn't know each other's details
+		+ Complex interaction workflow
+
+	** MediatR is a Mechanism, Not Architecture  (It is not Mediator exactly)
+	MediatR provides:
+		→ Request dispatching
+		→ Handler lookup
+		→ Pipeline mechanism
+
+	It does NOT automatically guarantee:
+		→ SRP
+		→ Good boundaries
+		→ Low coupling
+		→ Good business modeling
+		→ Good architecture
+	
+	Good use of MediatR: Controller ➜ PlaceOrderCommand ➜ MediatR ➜ PlaceOrderCommandHandler ➜ OrderService ➜ Domain Logic
+		Handler's role : Receive command ➜ Coordinate use case ➜ Call appropriate domain/application services ➜ Return result
+	

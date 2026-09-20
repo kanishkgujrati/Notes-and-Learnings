@@ -1,0 +1,1623 @@
+'Angular Framework Learnings'
+
+Single Page Application, Component based Framework (UI is built from Components(HTML + CSS + TS)), Opinionated(Strutctured), Uses RxJs for async flows, Built-in Routing, forms, HTTP, DI system.
+
+** Javascript is a Single-Threaded Programming Language.
+
+NgModule based structure (Older Angular)
+StandAlone Components (Modern Angular)
+
+What is Angular ?
+	User enters URL ➜ Request goes to the Web Server ➜ Web Server hosts the Front-end Application (HTML, CSS, JS) ➜ HTML, CSS, TS are downloaded to Users browser ➜ Browser runs these files and displays the Application.
+		Index.html (Components inside index.html change dynamically based on routing)  ➜  Main.ts (Entry point of Application)  ➜ Bootstrap App module / App Component
+
+		*Main.ts file calls bootstrapApplication function. It is a built-in function which accepts 2 parameters (AppComponent, appConfig);
+			1st parameter - Which compoent to load (AppComponent by default), 2nd parameter is Application Configuration
+
+			Main.ts file ➜ Angular executes the compiled Javascript of main.ts and loads the main.js file. It tells Angular which component to load first. Bootstrap AppComponent by Default.
+				Inside body of index.html. When ng serve command runs, Angular CLI comiles main.ts file into JavaScript file and dynamically injects main.js bundle into the index.html
+			
+				platformBrowserDynamic().bootstrapModule(AppModule).catch(err => console.error(err));		-- Module based structure
+						OR
+				bootstrapApplication(AppComponent, appConfig).catch((err) => console.error(err));			-- StandAlone structure
+
+	Angular is a framework which helps with built-in Routing, Forms, State Management.
+
+	Angular is a component-based Frontend Framework to build Single Page Applications (SPA) using Typescript.
+		(Developed by GOOGLE)		(React developed by META)
+
+	Advantages :- Simple SPA, Flexible and Structured (OOPS Friendly), Cross Platform and Open Source, Reusable codes (Services), Good for Unit Testing
+					Angular supports both JavaScript and TypeScript, Component based Architecture, CLI Tool, Uses Dependency Injection
+
+Angular.json :- It is a Configuration setting File which tells Angular, How the Application should be Built, Served and Tested.
+	Projects is the main section in the file. It has Project name.
+		"projects": {
+			"DayQuestTracker_Client": {					// Project Name
+			  "projectType": "application",				// project Type - It specifies if it is an Application or a Library. 
+			  "schematics": {},
+			  "root": "",								// Root is where the folder is located. "" means root level.
+			  "sourceRoot": "src",						// sourceRoot Porject Code is located inside the src folder. 
+			  "prefix": "app",							// <app-home></app-home> What will be the prefix when generating components
+			  "architect": {							// Each of the ng command reads configuration from here
+				"build": {},
+				"serve": {},
+				"test": {},
+			  },
+				
+			}
+		}
+
+Anguar is basically - Component Tree + Data Binding + Dependency Injection System + Services. Angular renders a tree of components.
+	Components → Build UI
+	Templates → Display data
+	Data Binding → Connect UI and TS
+	Dependency Injection → Manage services for the Components or Child-components
+	RxJS → Handle async operations (subscribe(), pipe(), Observables)
+	Routing → Navigation based on URL/Path (Component rendering based on the URL/Path)
+	Change Detection → Keep UI updated (whenever any event or change occurs)
+	
+	State (TS) → Template (HTML) → DOM (Browser)
+	User perfoms some action -> Component -> Service -> API -> Observable -> Component -> Template -> UI Updates
+
+	NPM (Node Package Manager) is used to manage and install Project Dependency. NPM is an Online Repository where we have thousands of free Libraries.
+		It is similar to Nuget Packages of .Net.
+
+	CLI Tool - Command Line Interface that we can use to initialize and develop Angular apps.
+
+Package.json :-
+	This File contains Angular Commands & Packages/Dependencies with Version what your Angular Application requires to run.
+	When the npm install conmmand is run in Terminal, It reads and installs all the packages & dependencies mentioned in the packages.json. All these would be added to node_modules folder.
+
+** All the Static files are stored in the 'public' OR 'src/assets' folder. Images, Icons.
+
+App Folder has all the components(html ,css, ts), routes, config. AppComponents (App.html, App.css, App.ts) - Angular 20, Earlier It was (App.component.html, App.component.css, App.component.ts)
+
+Components - An Angular app is a tree of components.
+	Reusable Building Block to create user interfaces.
+
+AppComponent (Root Component (Entry of the Application))  Main component, It is the First component that loads when the Application starts.
+ ├── HeaderComponent
+ ├── SidebarComponent
+ └── MainContentComponent
+      ├── ProductListComponent
+      └── ProductCardComponent
+
+Decorators :- (starts with @) Help Angular understand what kind of Class it is.
+	These are special functions which add extra information (Metadata) to a class, method or property.
+		@Component (UI), @NgModule (Module str), @Injectable (DI), @Directive (behave to elements), @Pipe (transform displayed data)	
+
+Modules :- (Old Angular Structure)  @NgModule  app.module.ts
+	Module is a place where you can group components, directives, pipes and services.
+	Each Module has its own Routing Module as well.
+		@NgModule({
+			declarations:[],				-- All the components part of this module are declared here
+			imports:[],						-- Here we can import other Modules, Services, Directives, Pipes or other StandAlone Components required anywhere in this Module
+			providers: [],
+			bootstrap: []
+		})
+
+Component Decorator - This makes a class as a component.  (@Component)
+	@Component({
+  		selector: 'app-example',                          -- Selector is used to identify each component uniquely, Later it would be used as <app-example></app-example> -> This is how Angular "inserts" all components into Html. 
+  		standalone: true,
+		imports: [],
+		templateUrl: './example.component.html',          -- This URL points to the actual HTML file of that component.
+  		styleUrls: ['./example.component.css']			  -- CSS file of component
+	})
+
+	App Root: <app-root></app-root>  -  Is the Entry point of the Application
+
+		AppComponent
+		├── Handles Authentication State
+		├── Controls Global Spinner
+		├── Controls Attachment Sidebar
+		├── Listens to Route Changes
+		├── Sets Browser Title
+		├── Displays Environment Info
+		├── Displays Backend Version
+		└── Handles Global Error State
+
+How Angular renders a component
+   Step-by-step:
+	-> Angular scans the DOM and sees  <app-example></app-example>
+	-> Angular finds selector in HTML                -- selector: app-example (this is not Html, it is TS)
+	-> Creates Component, Runs Constructor           -- new UserComponent(). It creates the Template 
+	-> Replaces it with component template           -- replaces <app-example></app-example> with actual HTML file of the Example Component 
+			This is a DOM rendering process inside Angular’s runtime
+	-> Binds data from TS class                      -- <h1>{{ name }}</h1> in HTML, name = "Kanishk", name values is displayed  {{ name }} → "Kanishk"
+			Evaluate Data Binding + Template Rendering
+	-> Inserts data into DOM, Browser now sees 'Kanishk' as header
+	-> Keeps it reactive (auto updates UI) (Change Detection in TS)
+   Angular does not manually updates DOM, State changes -> UI re-renders automatically
+
+
+Component lifecycle - Angular creates and destroys components automatically whenever required.
+	Create component -> Render HTML -> Update when data changes -> Destroy when not needed
+
+	1. Create Component - Creates Instance -> Runs Component Constructor -> Initializes inputs -> Sets up Internal Tracking
+	2. Render in HTML - Builds Template -> Evaluates Bindings {{}} -> Insert DOM into page
+	3. Update on Data Change - Whenever some Event occurs, API response is received, Input changes, Observable updates -> Angular runs 'Change Detection Cycle'
+	4. Destroy when not needed - Route changes, *ngIf becomes false, user navigates to different comp. Angular removes DOM, clears memory ref, unsubscribe internal bindings 
+
+Constructor vs ngOnInit :- 
+	Constructor is used by JavaScript/TypeScript. Purpose - Dependency Injection & Basic initialization. Does not call any API or access Inputs. (NOT A PART OF LIFECYCLE HOOKS)
+	ngOnInit - Initialization of the Component.    Purpose - API calls, Initial Data Loading, Setup Logic. (PART OF LIFECYCLE HOOKS)
+
+LifeCycle Hooks - 
+	constructor()					-- When Component is Instantiated, Always runs before any Angular Hooks  (NOT A PART OF LIFECYCLE HOOKS)
+	ngOnChanges()					-- When Input Property changes from the Parent component
+	ngOnInit()						-- When Instance of the Component is created. Now we can add Component Operations / Subscriptions.
+	ngDoCheck()
+	ngAfterContentInit()			-- If Child Component changes
+	ngAfterContentChecked()			-- If Child Component changes
+	ngAfterViewInit()				-- If Child Component changes
+	ngAfterViewChecked()			-- If Child Component changes
+	ngOnDestroy()
+		When a component is first created: Constructor -> ngOnChanges -> ngOnInit -> ngDoCheck -> ngAfterContentInit -> ngAfterViewInit
+		For subsequent input changes:      ngOnChanges  -> ngDoCheck
+
+
+**In Angular, there are now 2 ways to define components:
+	1. Standalone Components (introduced in Angular 14, recommended in modern Angular)
+	2. NgModule-based Components (Traditional approach)
+
+
+Traditional (Non-Standalone) Components :- Before standalone components existed, every component had to belong to an NgModule.
+	app/											AppModule
+	├── app.module.ts								├── HomeComponent
+	├── app-routing.module.ts						├── AboutComponent
+	├── home/										└── ContactComponent
+	│   ├── home.component.ts
+	│   └── home.module.ts
+	└── about/
+		├── about.component.ts
+		└── about.module.ts
+
+	Angular discovers components through modules. The module acts as a container for components, directives, and pipes.
+		@Component({
+		  selector: 'app-home',
+		  templateUrl: './home.component.html'
+		})
+		export class HomeComponent {}
+
+		@NgModule({
+		  declarations: [HomeComponent, AboutComponent, ContactComponent],    // All the components are declared in the declarations.
+		  imports: [CommonModule]
+		})
+		export class HomeModule {}
+
+
+Standalone Components :- A standalone component does not need to be declared inside an NgModule.
+	@Component({
+	  selector: 'app-home',
+	  standalone: true,         // standalone: true makes it a Standalone Component 
+	  imports: [CommonModule],  // All the imports required for this components are included here (In NgModule based arch, we import everything required for component in Module Component is declared)
+	  templateUrl: './home.component.html'
+	})
+	export class HomeComponent {}
+
+		app/									App
+		├── app.component.ts					├── HomeComponent
+		├── app.routes.ts						├── AboutComponent
+		├── home/								└── ContactComponent
+		│   └── home.component.ts
+		└── about/
+			└── about.component.ts
+
+	Component manages its own dependencies through imports. The component imports dependencies directly.
+
+	Standalone components:
+	-> Reduce boilerplate
+	-> Simplify lazy loading
+	-> Make dependency management clearer
+	-> Improve Tree-shaking (The Unused components are treated as Dead Leaves and Branches which should be removed. Destroying the Unused components) (Unused code elimination during bundling.)
+	-> Make Angular closer to React/Vue style component organization
+
+
+	Feature	            -      NgModule Component	Standalone Component
+	Requires Module	    -             Yes	                No
+	Declared In	        - 	     declarations	   	   standalone: true
+	Dependency Imports	-        Module imports	       Component imports
+	Bootstrap	        -       bootstrapModule()	  bootstrapApplication()
+	Lazy Loading	    -         loadChildren()	    loadComponent()
+	Recommended for New Apps	       No	                Yes
+
+
+Data binding {{ }}  ( Connects UI and TS ) :- The way to communicate between TypeScript Code and HTML View.
+
+Data flows in 2 ways :- 
+	1. TS -> Html
+		{{ value }}  ||  [property]="value" 
+	2. Html -> TS
+		(click)="method()" 
+	3. Html <-> TS [(ngModel)]="value"
+	This is called Two-way Binding.
+
+Angular reacts automatically, We dont have to manually update DOM. Only update variables -> UI updates automatically.  ('Change Detection Cycle')
+
+	1. Interpolation   {{}} (TS -> HTML)  - {{ Name }} (HTML)  & Name = "Kanishk"(TS)
+	2. Property Binding []  (TS -> HTML)  - <img [src]="url">  & url = "photo.jpg"(TS)  OR  Inputs from Parents to Child Component
+	3. Event Binding    ()  (HTML -> TS)  - <button (click)="ClickMethod()">(HTML)  & ClickMethod(){ //implementation }(TS)
+	4. Two-Way Binding  	(Both Ways)  - <input [(ngModel)]="Name">   If User changes input from UI or TS changes value, both HTML and TS get updated & synchronized. It requires form modules. (FormsModule)
+
+
+Component Communication (Parent <-> Child Components)
+	[Input] = data flows down && (Output) = events flow up
+
+   1. Parent → Child    (Data In)      (@Input)
+		Parent passes data into child component
+			<app-user-card [name]="users[0]"></app-user-card>
+		Child takes the data from parent
+			export class UserCardComponent {
+  			    @Input() name!: string;               -- ** avoid updating the Input variable in the child component  (Parent owns the state of input)
+			}
+   2. Child → Parent   (Events Out)   (@Output)
+		Child sends events to parent  (Event Emitter)
+			export class ChildComponent {
+  				@Output() clicked = new EventEmitter<string>();
+				send() { this.clicked.emit('Hello Parent'); }
+			}
+		Parent listens
+			<app-child (clicked)="handleClick($event)"></app-child>   handleClick(message: string) { }
+				Event is the data sent from the Child Component.
+
+
+Directives :-  A Directive is a class that tells Angular - Do something with this HTML element.
+	Types of Directives - Component, Structural and Attribute Directive.
+	-> Component Directive - All Components are directives. @Component({})
+	
+	-> Structural Directive - These change the DOM structure. Add/Remove Elements from DOM.   "Only one structural directive per element"
+		1. *ngIf - <div *ngIf="!isLoading">Welcome</div>          -- Displays Welcome only when the isLoading variable is false. Angular completely 'REMOVES' the element from the DOM. (Not Hidden)
+				(variable gets updated in the TS by some logic, UI gets updated automatically).
+				<div *ngIf="isLoggedIn; else loginTemplate"> Welcome </div>   -- If isLoggedIn is true display this 
+				<ng-template #loginTemplate> Please Login </ng-template>      -- Else display this  (loginTemplate)
+
+		2. *ngFor - Looping  - <li *ngFor="let item of items"> {{ item }} </li>   -- For loop, It displays all the items in items variable. Angular creates multiple DOM elements.
+
+		3. ngSwitch - <div [ngSwitch]="status"> <div *ngSwitchCase="'Pending'"> Pending Approval </div> <div *ngSwitchDefault> Unknown </div> </div>
+			
+			All Structural directives internally use ng-template. Angular converts <div *ngIf="isLoggedIn" / *ngFor / *ngSwitch ...> to <ng-template [ngIf]="isLoggedIn" / ...> 
+				and original div moves inside the ng-template.
+			We can only have one structural directive for each element because while converting it to ng-template Angular gets confused which one to keep as the outer.
+
+	-> Attribute Directive - [ngClass], [ngStyle] These dont add/remove, they modify appearance or behavior.
+		ngClass - <div [ngClass]="{ active: isActive }"></div>
+
+*ngFor - When array changes, Angular may recreate many DOM elements. Very Bad for Performance
+	trackBy - <div *ngFor = "let user of users; trackBy: trackById"></div>
+		trackById(index: number, user: any) { return user.id; }
+		It allows Angular to reuse DOM nodes when identities remain stable.
+	Now Angular identifies rows by id.
+	
+ng-container - A logical Angular wrapper that DOES NOT create any HTML element in the DOM.
+			   Keeps the DOM cleaner. Now extra Wrapper is created.
+		<ng-container *ngIf="showMessage">      If showMessage is true DOM will only have  <div>Hello</div> (No extra wrapper)  (ng-container is removed)
+			<div>Hello</div>
+		</ng-container>
+
+ng-template - A piece of HTML that Angular stores but DOES NOT render immediately. HTML stored for Later Use.
+		<ng-template #loadingTemplate> Loading... </ng-template>   -- When the condition is true only then it is rendered.
+	->ng-template is the foundation of structural directives.
+
+											ng-template		ng-container
+		Creates an actual DOM element?			❌ No			❌ No
+		Contains content immediately?	❌ No, it's template	✅ Yes
+		Used for conditional/lazy rendering?	✅ Commonly		✅ Commonly
+		Can be referenced with #ref?			✅ Yes			✅ Yes
+		Can be used with else?					✅ Yes			❌ Not by itself
+		Think of it as						A blueprint			An invisible wrapper
+	
+Services - It is a shared logic layer. 'Reusable Business Logic' (API calls, Authentication, Data Storage, Business logic). (State management is also possible by creating root instance, Shared by all components)
+	Separated Services make the Components clean and simple. As the logic is separated. If everything is inside the component, it becomes very heavy and complex. 
+	With Services Logic is reusable in other places as well.
+		constructor(private userService: UserService){}
+		loadUsers() { this.userService.getUsers(); }
+		
+	**'@Injectable' - makes a class available for Angular's Dependency Injection system. A service can be used by another service/component.
+		@Injectable({
+		  providedIn: 'root'     -- Create ONE instance for the entire application    "Singleton Service"   Every component gets the same instance.
+		})                       -- **Angular creates the service lazily, when it's first requested. (Lazily - Until and unless component is used it does not create the instance).
+		
+	Flow :- Component -> Serivce -> HTTPClient -> Server API Call
+
+Dependency Injection - Angular automatically gives services, we dont create them manually.  Manually - ( const service = new UserService(); )   ** An INJECTOR is Angular's dependency container.
+	DI - constructor(private myService: MyService) {}   -- Angular automatically injects the service.
+		Creates Service + Stores Instance + Injects Instance
+		
+	DI Flow :- Component Created -> Constructor executed -> Needs MyService ? -> Ask Injector -> Instance Exists ? -> Yes (Return Instance) -> Injects Same instance into the Component
+																												   -> No  (Create Instance) -> Injects New created instance into the Component
+	
+	Without DI - Tight Coupling, Hard to Test, Multiple Instances being created, Angular can not manage Lifecycle
+					Lot of Instances would be created for each component and No data sharing would be possible.
+					If Services, require multiple services. Then creating an instance would become almost impossible.
+					
+	Without DI  => Component → Creates Dependency
+	With DI     => Component → Declares Dependency & Injector → Creates & Provides Dependency
+	
+	Service Lifetime :- (Singleton, Scoped)  - Angular does not have Transient
+
+		-> Singleton  @Injectable({ providedIn:'root' }) -- One Instance for whole App, Every component uses the same Instance  Angular registers it with the root injector.
+				-- If we use providedIn: 'root', we do not need to add the service to the providers array of any component(Nowhere). Only 1 Instance should be there for Singleton Service. 
+				-- If not present in any of the Component Providers -> Root Injector creates Instance and we have application-wide Singleton (just like .NET's Singleton).
+				-- Whereas It is possible to create multiple Instances of Singleton Service if added in the providers array of components.
+
+		-> Scoped     @Injectable()                      -- This is in the Service, Injectable is empty, No providedIn root
+				 @Component({ selector: 'app-Login', providers:[UserService] }) -- This is in the Component it needs to be Injected.
+														 -- Every component gets its own instance.  "Different Objects, Different Memory, Different State."
+				 or It can be in the module as well if NgModule based structure providers:[UserService]   -- All the components in the Module would share the same Instance of the Service.
+			
+			** NullInjectorError: No provider for MyService! - For a Scoped Service with @Injectable(), If it is not injected anywhere in the Providers Array of any component/module but being used.
+		
+	In .NET, a Scoped service is tied to an HTTP Request lifecycle.
+	In Angular, a Scoped service (provided in a component) is tied to a UI Component lifecycle. Component Destroyed, Instance Destroyed.
+
+		other available values for providedIn: 'platform' - Shared across multiple Angular applications running on the same page.
+											   'any'      - New instance per lazy-loaded module
+
+Provider :- Provider is an Object declared inside decorators which inform Angular that a particular Service is available for injecting inside the components.
+
+Injector Hierarchy (Hierarchical Dependency Injection) - It is not so simple as:  Application -> Injector -> Services 
+	Root Injector -> Component Injector -> Child Injector -> GrandChild Injector    -- Angular searches for dependencies from the nearest injector upward.
+		Angular always searches Current Injector -> Parent Injector -> Parent Injector -> Root Injector  Until Instance is found, Once found injects that instance to the component.
+			This is only true if the Service has not been added to the components provider array(It checks nearest available), If added in providers array it creates a new instance and injects. 
+
+Provider Shadowing/Over-riding :- The child injector overrides the parent provider. (HeaderComp provider overrides Parent provider)
+	AppComponent (providers:[CounterService]) (#Instance 1 created)
+	├── HeaderComponent (providers:[CounterService]) (#Instance 2 created)
+	│   └── UserProfileComponent (providers:[CounterService]) (#Instance 3 created)
+	└── SidebarComponent (#Instance 1 used, already created by parent component)
+    -- 3 instances of UserService are created. Sidebar Component uses the same provider as that of AppComponent (Parent provider)
+
+	Using the same instance as that of root and not having individual instances would be good for small applications, but for medium/large enterprise apps it would be very difficult to debug where was the value changed and why ?
+	RxJS / NgRx is used for State-Management (BehaviorSubject)
+
+	If state is shared intentionally  -> Use shared service/store (RIO aplication had Shared Service for State-Management)
+	If state belongs to one component -> Keep it in that component
+
+Change Detection Actual Flow :-  Event Occurred -> Run Change Detection -> Reevaluate Template Expressions (in all the Components existing in the Application) -> Found Difference -> Update DOM
+	Whenever any event occurs on any of the Component no matter what, Angular will check all the existing Components in DOM compare all Template Expressions and if any change, It updates the DOM.
+	Angular does NOT automatically update every DOM element. It checks every binding. Only changed bindings are updated in the DOM.
+		*Default Change Detection:
+			Angular starts from the root component and checks the entire component tree.
+		*OnPush Change Detection:
+			Angular may skip parts of the tree unless they are marked for checking.
+	
+	Performance Optimization:
+		Prefer OnPush where appropriate. changeDetection: ChangeDetectionStrategy.OnPush()
+			@Component({
+			  changeDetection: ChangeDetectionStrategy.OnPush
+			})
+	** When using OnPush always use async pipe for Observables so that the UI is updated whenever new value is emittedd.
+		Angular checks an OnPush component If :-
+			1. an @Input reference changes (Parent passes a new object reference.)
+			2. An event occurs inside the component.
+			3. Async pipe emits (Observable is Subscribed internally, No manual subscriptions) {{ user$ | async }}
+			4. Manual trigger 	this.cdr.markForCheck(); &&  this.cdr.detectChanges()
+
+
+Zone.js - Angular patches APIs like: setTimeout(), setInterval(), Promise, Events, HTTP requests and listens for them.
+		These are not Angular APIs, they are Browser APIs.
+	When: setTimeout(...) completes, Zone.js tells Angular: some async operation finished. Angular says: Run Change Detection.
+	setTimeout finishes -> Zone.js notices -> Angular notified -> Change Detection runs -> Bindings re-evaluated -> UI updates.
+
+	Zone.js internally replaces the Timer with a function (Not actually, only the idea). When Timer finishes Zone.js notices async task finished, Run Change Detection.
+
+		Async Event -> Zone.js notices -> Angular runs Change Detection -> Angular re-evaluates template expressions -> DOM updated if needed
+
+** Angular does not track variables. It evaluates template expressions. Angular does not check changes in an array one by one.
+	During Change Detection, Angular asks:
+		What is the current value of the expression "users"?
+		It gets back an array reference.
+		Then *ngFor (internally) is responsible for figuring out how to efficiently update the DOM for that iterable.
+			1. Change Detection decides to re-evaluate the binding.
+			2. *ngFor decides how to update the list in the DOM.
+
+			Array reference didn't change  ➜  But iterable contents changed  ➜  ngFor's differ detects the change  ➜  DOM gets updated
+
+	Phases of Change Detection :- 
+			1. Should Angular check the component ? Angular has not entered the component yet.	AppComponent -> UsersComponent (OnPush)  
+					(This becomes true for some cases @Input reference change (Parent component changes reference), OR Async pipe emission, OR markforcheck(), OR Event inside Same Component)
+			2. (Only If Phase 1 is YES) Angular enter the component and executes: Now it evaluates: users and updates the DOM.
+
+	For string/int variable change, Angular directly checks the changes in the Value "Kanishk" !== "Rahul" Update DOM.
+
+Change Detection runs -> Angular re-evaluates every template expression -> Compares the current result with the previous result -> Updates the DOM if the result changed
+
+	@Component({ changeDetection: ChangeDetectionStrategy.OnPush })
+	export class UsersComponent {
+	   users = ['A', 'B'];
+	   addUser() { this.users.push('C'); }  // UI will not be Updated because Angular still has the same array reference of users (when it compares users in html in ngFor).
+											// Angular never reaches the point where *ngFor gets reevaluated. If the reference of the variable is not changed it does not go to the 2nd step(ngFor element-wise comparision)
+	}
+	FLOW :- Did your @Input reference change? No. -> Any async pipe emission? No. -> Any markForCheck()? No. -> Okay. Skip this ngFor.
+		Angular evaluates: *ngFor="let user of users"
+			The expression is: users
+		-> In Default strategy: Angular always evaluates it.
+		-> In OnPush: Angular may never evaluate it.    (Use *Immutable Updates* for these cases to update the DOM)  // this.users = [...this.users, 'Bob'];  -- Creates a new Array / New reference
+
+	Default Strategy FLOW :- Button Click -> Angular Event -> Zone.js -> Run Change Detection -> Traverses the Entire Component Tree -> Evaluates all Template Expressions of every component -> Compares the current result of each template expression with the previous result -> Updates DOM if required
+		Whenever an Angular event or an Asynchronous operation occurs (such as a button click, HTTP response, timer completion, Promise resolution, etc.), Angular starts a Change Detection Cycle.
+
+	OnPush Stategy FLOW :- Button Click -> Zone.js -> Run Change Detection -> Should this component be checked?
+																											├── YES -> Evaluate Expression
+																											└── NO  -> Skip Entire Component
+		** Angular skips checking huge portions of the component tree. That's where the performance comes from.
+		OnPush checks the component only in few cases they are @Input reference change, OR Async pipe emission, OR markforcheck() OR an Event is triggered inside that component itself is applied explicitly.
+	
+	OnPush is a Performance Optimization strategy. Unlike the Default strategy, Angular does not automatically check every OnPush component during every Change Detection cycle.
+	Instead, Angular first decides whether the component should be checked.
+	Phase 1 – Should Angular Check This Component?
+		Angular checks an OnPush component only if one of the following happens:
+			1. An @Input() reference received from the parent component changes.
+			2. An Observable used with the async pipe emits a new value.
+			3. ChangeDetectorRef.markForCheck() / detectChanges() is called explicitly.
+			4. An event (click, input, submit, etc.) occurs inside that component.
+		If none of these conditions are met, Angular skips the component entirely, meaning its template is not evaluated.
+	Phase 2 – Evaluate the Template
+		If Angular decides to check the component, it:
+			Evaluates Template Expressions -> Compares the current result with the previous result -> Updates the DOM if the result has changed
+
+	*Immutable Update :- this.users = [...this.users, 'C'];  --"New Reference", Now OnPush element becomes eligible to be checked. It enters the template and ngFor runs again. DOM Updates.
+		** Angular does NOT inspect your component's variables to discover that the reference changed.
+		** ... - (The Spread Operator) - The three dots ... take all the existing items currently inside the this.users array and unpack/expand them into individual elements.
+
+
+Promise - Only one Future Value. A Value is returned and thats it. It can not provide value updates as well.
+	getUsers().then(users => { console.log(users); });
+
+	+------------------------+-----------------------------------------+----------------------------------------------+
+	| ★ FEATURE              | ★ PROMISE                               | ★ OBSERVABLE                                 |
+	+------------------------+-----------------------------------------+----------------------------------------------+
+	| Definition             | Represents a Single future value        | Represents a Stream of values over time      |
+	+------------------------+-----------------------------------------+----------------------------------------------+
+	| Values Emitted         | Only one value                          | Zero, one, or many values                    |
+	+------------------------+-----------------------------------------+----------------------------------------------+
+	| Execution              | Executes immediately when created       | Executes only after subscription (lazy)      |
+	+------------------------+-----------------------------------------+----------------------------------------------+
+	| Cancellation           | Cannot be cancelled                     | Can be cancelled (unsubscribe)               |
+	+------------------------+-----------------------------------------+----------------------------------------------+
+	| Operators              | Limited (.then(), .catch(), .finally()) | Rich operators (map, filter, merge, etc.)    |
+	+------------------------+-----------------------------------------+----------------------------------------------+
+	| Retry Support          | Manual implementation                   | Built-in retry operators                     |
+	+------------------------+-----------------------------------------+----------------------------------------------+
+	| Error Handling         | .catch()                                | error callback, catchError(), retry(), etc.  |
+	+------------------------+-----------------------------------------+----------------------------------------------+
+	| Completion             | Automatically completes after resolve   | Can complete manually or remain active       |
+	+------------------------+-----------------------------------------+----------------------------------------------+
+	| Subscription           | Not required                            | Must subscribe to receive values             |
+	+------------------------+-----------------------------------------+----------------------------------------------+
+	| Lazy or Eager          | Eager                                   | Lazy                                         |
+	+------------------------+-----------------------------------------+----------------------------------------------+
+	| Chaining               | Using .then()                           | Using pipe() with operators                  |
+	+------------------------+-----------------------------------------+----------------------------------------------+
+	| Best Use Cases         | HTTP request, async task, one response  | Events, WebSockets, live data, intervals     |
+	+------------------------+-----------------------------------------+----------------------------------------------+
+	| Angular Usage          | Supported                               | Preferred (HttpClient, Router, Forms)        |
+	+------------------------+-----------------------------------------+----------------------------------------------+
+
+RxJS - Reactive Extension for Javascript :- ('Observables' - Stream of Future Values)
+	As the APIs are asynchronous, Angular sends request then, Dont block the UI, Keep Application responsive and Wait for response.
+	Observable Execution is Lazy.
+	  Observable without subscribe:
+		const users$ = this.http.get('/users');   -  API call not executed. No Requests yet.
+		users$.subscribe(...)                     -  API call executes and fetches the data.
+	
+	Adding $ to an 'Observable Variable' is like a convention. (Not compulsory, just to tell devs it is an Observable)
+	Observable - Producer of Values  (It emits the values)
+	Subscribe  - Consumer of Values  (It receives the values)
+	
+	Observable does not contain data. It describes how data will be produced.
+	
+	Observable Contract  -->  Zero or more next() notifications  -->  Then EITHER complete() OR error()  -->  Never both.
+	
+** Why choose Observavbles over Promise for Angular ? -> Http returns 1 value, Promise also gives one valule. But we use Observable instead of Promise. 
+	Observables can do everything that a Promise can do and also do much more.
+
+.pipe( map(...), filter(...), retry(...), catchError(...) )
+
+	const numbers$ = new Observable(subscriber => {		// Observables define how values are produced, Consumers subscribe to this
+		subscriber.next(1);
+		subscriber.next(2);
+		subscriber.next(3);
+		subscriber.complete();
+	});
+	Observable -> next(1) -> Subscriber receives 1 -> next(2) -> Subscriber receives 2 -> next(3) -> Subscriber receives 3
+	Everytime next() is called, the subscriber immediately receives that value.
+	Complete() signifies that the stream is complete, Observable is done sending values, Close the stream.    -- Finish Stream.
+	
+	Actual HTTP Call Flow :-  HTTP Request Sent -> Response Arrives -> next(response) -> complete()   -- Only one value. Then stream ends.
+
+Subject() :- Observable + Observer  =  Can Produce Values + Can Subscribe To Values = Listen and Send Values
+	const subject = new Subject<number>();
+	subject.subscribe(value => {					// subscribe() is the Consumer
+		console.log('A:', value);
+	});
+	
+	Usecase :- Assume Header Component updated some value, Sidebar component needs to refresh.  Header --updatesInfo--> Subject.next() --> Sidebar recieves event --> Updates UI.
+	
+	const subject = new Subject<number>();
+	subject.next(1);                               -- No Subscriber at this point, so data is lost forever
+	subject.subscribe(x => console.log(x));        -- Now there is 1 Subscriber
+	subject.next(2);
+	  // Only 2 gets printed, 1 is lost forever, When 1 was pushed, Nobody was listening.
+	** Subject only delivers future emissions.
+
+BehaviorSubject - New subscribers immediately receives the Latest/Current value.  (BehaviorSubject always stores a current value.)
+** BehaviorSubject requires an initial value. -- const user$ = new BehaviorSubject<User | null>(null);
+	const behavSubject = new BehaviorSubject<number>(100);      -- No Subscriber at this point  & BehaviorSubject stores 100 as Current/Remembered Value
+	behavSubject.next(200);                                     -- No Subscriber at this point  & BehaviorSubject updates its remembered value (200).
+	behavSubject.subscribe(x => console.log(x));                -- New Subscriber Joins         & BehaviorSubject provides the latest value - 200 to the subscriber.
+	behavSubject.next(300);                                     -- New Value pushed, Current/Remembered Value becomes - 300
+
+** Subjects are like Events, Nobody cares about old events.  -> Event Stream
+** BehaviorSubject is State.     -> State Container
+
+** UnSubscribe() Subscriptions, If we never unsubscribe then, every time a component is created New Subscriber is created and Subscriber stays alive forever. 
+	If the Component is destroyed and created again New Subscriber will be created and previous one is still alive. On every next() of that observable there will be those many callbacks as the number of Subscribers Alive.
+		-> Memory Leaks
+		-> Duplicate API Calls & Events
+		-> Performance Issues
+
+** In Modern Angular Application, We have 'takeUntil()'   - No need to UnSubscribe manually in the ngOnDestroy()
+	private destroy$ = new Subject<void>();   -- Destroy Subject is created
+	this.userService.currentUser$
+      .pipe( takeUntil(this.destroy$))        -- Automatically Unsubscribes.
+      .subscribe(...);
+	  
+	ngOnDestroy() {
+		this.destroy$.next();
+		this.destroy$.complete();
+	}
+
+** 'takeUntilDestroyed()' (Angular 16+)  -- No manual Destroy Subject, No ngOnDestroy. 
+
+	this.userService.currentUser$.pipe( takeUntilDestroyed() ).subscribe(...);
+	
+	** We also have take(1) RxJS Operator - Take the first value emitted by the Observable, then automatically unsubscribe and complete.
+		Even though the Observable emits 20 and 30, take(1) ignores them because it unsubscribes after the first emission.
+
+** Async Pipe  {user$ | async}
+	currentUser$ = this.userService.currentUser$;    -- No Subscriptions req, Angular internally does subscribe & when Component is destroyed, Angular automatically UnSubscribes as well.
+	{{ currentUser$ | async }}Transforms emitted values
+	Whenever possible, Use Async Pipe instead of Subscribing and Unsubscribing in TS Manually.
+	
+**	Promise - Single Value
+	Observable - Stream of values
+	Subscribe() - Consumer of stream of data
+	Subject - Event Stream (Observable + Consumer)
+	BehaviorSubject - State Stream (latest value)
+	UnSubscribe() - Prevent Memory Leaks
+	Async pipe - Angular automatically Subscribes and UnSubscribes and Destroys.
+	
+Pipe() :- users$.pipe(...).subscribe(...)
+	Observable -> Pipe -> Transform response values -> Subscriber 
+
+Operators for Observables :-
+	
+	-> map() :- Transforms emitted Values. Data Transformation before Subscriber recieves it.
+		of(1,2,3).pipe( map(x => x * 10) ).subscribe(console.log);       // 10 20 30 is returned
+
+	-> filter() :- 
+		of(1,2,3,4,5).pipe( filter(x => x % 2 === 0) ).subscribe(console.log);       // 2 4 is returned
+		
+		of(1,2,3,4,5)
+		.pipe(
+			filter(x => x % 2 === 0),       // Filter works first
+			map(x => x * 10)                // After Filter accepts the value then it performs the map fn to the accepted values
+		).subscribe(console.log);           // 20 40 is returned
+
+	-> tap():- Just observes the value. (Map Updates the Value, Filter removes the value) Tap is used to observe or log values which were originally received by the Observable
+		of(1,2,3,4,5)
+	   .pipe(
+		  filter(x => x % 2 === 0),
+		  tap(x => console.log('After Filter:', x)),
+		  map(x => x * 10)
+	   ).subscribe(console.log);       // After Filter: 2 20 After Filter: 4 40 is returned as output
+
+** Order/Sequence of tap(), map(), filter() matters for the flow of values to the Subscriber. Each operator receives the output of the previous operator. Single pipe() can have multiple of these operators.
+	.pipe(
+	   tap(x => console.log('Before Filter', x)),
+	   filter(...),
+	   tap(x => console.log('After Filter', x)),
+	)
+
+Higher Order Mapping:
+-> switchMap() :- 
+	Without SwitchMap():- Suppose User is typing in Search box, For Every Key press we would call Get /users?search=.....   & All of the HttpRequests remain Active even though they are of literally no use.
+		K
+		Ka
+		Kan
+		Kani
+		Kanishk  :-  What happens is Each input would call API endpoint, and the latest call would return the data first and then previous call data would arrive after. 
+					So Dropdown shows values for Kanishk first and when later response for Kanish arrives, Dropdown is updated. So eventually what we will have on UI is data for K.
+	Issues with this Flow :- 
+		-> Unnecessary network traffic
+		-> More server load
+		-> Race conditions
+		-> UI showing stale data
+		
+	Expected Flow should be :- New search term arrives -> Cancel previous request -> Start new request     // Only the latest request matters.
+	
+	With SwitchMap():- Each term creates a new Observable, and it keeps switching from one Observable to another. 
+						With Each Input a new HttpRequest is called before Previous request returns any response, 
+						SwitchMap() cancels/unsubscribes the previous request and only the latest request is Active, which is really required. (Others are of No Use)  (Basically only browser unsubscribes the request, on the Server it would still be running)
+						SwitchMap unsubscribes from the previous inner observable.
+		K    - Observable#1                 K   ─────X            Request #1 is sent for API call.
+		Ka	 - Observable#2                 Ka  ────────X		  Request #2 arrives, Request #1 is Cancelled.
+		Kan	 - Observable#3                 Kan ──────────────✓   Request #3 arrives, Request #2 is Cancelled.   Only Request #3 is completed and response is returned for this. Other Observables are deleted or UnSubscribed.
+
+	SwitchMap() is best for SearchBoxes, Route parameter changes, Auto-complete, Live Filtering.    (Where only Latest value is considered)
+	
+		** Does switchMap cancel the HTTP request?
+			switchMap unsubscribes from the Observable. Angular then aborts the browser's HTTP request if possible. If the request has already reached the server, 
+			the backend continues processing unless it supports request cancellation (for example, via ASP.NET Core CancellationToken). The response is ignored because there is no longer a subscriber.
+
+
+-> MergeMap() :-  No Request Cancellations. Everything runs simultaneously.   (eg. Upload 10 files, In this we would not want to cancel the previous requests, We would want all requests to be completed.)
+		A arrives -> Request A starts       Request #1 ───────────────✓
+		B arrives -> Request B starts       Request #2 ───────────────✓
+		C arrives -> Request C starts       Request #3 ───────────────✓
+	All requests get completed, Potentially in any order.'
+	
+-> ConcatMap() :- Sequential Request completion.
+		A arrives -> Request A starts
+		B arrives -> Waits for Req A to get Finished/Completed.
+		C arrives -> Waits for Req B to get Finished/Completed.
+			A ───────────────✓  --> B ───────────────✓ --> C ───────────────✓
+	eg. :- Create Order -> Generate Invoice -> Send Email   (It must happen in a strict Order)
+
+-> exhaustMap() :- First click is accepted and request is sent -> While request is running: Ignore all other clicks -> When request completes: Allow clicks again.
+		A ───────────────✓
+		B (ignored)
+		C (ignored)
+		D (ignored)
+	eg:- Login of Application, Payment button, Submit form, Preventing accidental double-clicks
+	
+switchMap() - Latest Request wins/gets completed.		(Only Last Request)
+mergeMap()  - All Requests get completed Individually.  (All Complete, No Order of Completion (Random))
+concatMap() - One by One Request Completion. 			(Strict Order of Completion)
+exhaustMap()- First wins, Ignore the rest
+
+	If User clicks Save() button multiple times very quickly, We must use SwitchMap(), only the latest request should get executed. No need of multiple requests.
+		but this is not universally true, it depends on the Business Requirement.
+
+OPTIMIZATION: debounceTime() && distinctUntilChanged()
+
+debounceTime(300) :-
+		0ms K          at K, the timer for debounce starts 
+		100ms Ka       Ka arrives -> Cancel old timer, Start new timer
+		200ms Kan      Kan arrives -> Cancel old timer, Start new timer
+		300ms Kani     Kani arrives -> Cancel old timer, Start new timer
+		400ms Kanishk  Kanishk arrives -> Cancel old timer, Start new timer
+				Now the User stops typing, Angular waits 300ms --> Sends only ONE request with the whole value entered (Kanishk).
+	
+	This helps removes Sending multiple API Calls, cancelling Previous request and Sending New Request.
+
+	this.searchControl.valueChanges
+	.pipe(
+		debounceTime(300),                       -- Wait until user stops typing, then start 300ms timer.
+		distinctUntilChanged(),                  -- Prevents duplicate values of searchControl.
+		switchMap(search =>                      -- Make request, Cancel previous requests if new value arrives.
+			this.userService.search(search)
+		)
+	).subscribe(results => {
+		this.users = results;
+	});
+
+
+combineLatest() :- combines the latest values of multiple(every) Observable specified.
+		combineLatest emits whenever ANY source emits, using the latest value from ALL sources.
+	combineLatest([     -- country$ latest value +  city$ latest value
+	   country$,
+	   city$
+	])                  -- Take Latest value of both Observable and emit both.
+	
+	** combineLatest means Give me the latest value from every observable, If any one of the values dont exist then combineLatest cannot combine anything because something is missing.
+
+	const country$ = new BehaviorSubject('India');
+	const city$ = new BehaviorSubject('Bangalore');
+	combineLatest([
+		country$,
+		city$
+	]).subscribe(console.log);
+	city$.next('Mumbai');
+	country$.next('USA');
+	city$.next('New York');             
+		O/P :- ['India','Bangalore'] ['India','Mumbai'] ['USA','Mumbai'] ['USA','New York']
+
+forkJoin() :- This operator is very common when a page needs multiple APIs before rendering.
+	Without forkJoin() we would be writing nested Subscriptions, which would be a Callback Hell.
+			forkJoin() - It Starts ALL requests together and runs them in Parallel. Waits for ALL of them to complete.
+					forkJoin({
+					   user: this.userService.getUser(),                             --Observable A -> A -> Complete
+					   orders: this.orderService.getOrders(),                        --Observable B -> B -> Complete
+					   notifications: this.notificationService.getNotifications()    --Observable C -> C -> Complete
+					})														    	 --forkJoin() waits for all 3 to complete, Once every Observable is complete, then subscriber emits the value.
+					.subscribe(result => {});	 O/P - ['A', 'B', 'C'] all together  -- Subcriber only runs ONCE.
+		** forkJoin waits for ALL observables to complete. Then emits once.
+			
+			If any observable never completes, forkJoin never emits.
+				forkJoin([          // never emits, because interval never completes.
+				   interval(1000)
+				]);
+
+
+ ** Operator		- Subscriber Runs
+	of(1,2,3)		- 3 times
+	combineLatest()	- Every time any source emits
+	BehaviorSubject	- Every emission
+	forkJoin()		- Exactly once (after all complete)
+	
+CatchError() :- 
+	Error Occurred -> Intercept Error -> Provide Fallback Value -> Continue Flow
+		this.http.get<User[]>('/users')
+		   .pipe(
+			  catchError(() => of([]))             -- of([])  This is a fallback value (empty value) provided, In case Users API call fails then the fallback value is used.
+		   )
+		   .subscribe(users => { console.log(users); });   -- Even though the API call failed, but still the Subscriber would still go into next() with the fallback Value.
+
+	This is useful for cases where you should not show the Application crashed and rather Display No User Found.
+
+
+takeUntil() :- 
+	-> Prevent memory leaks
+	-> Auto-unsubscribe
+takeUntilDestroyed() :- Angular automatically ties the subscription to the component lifecycle.
+
+General example including multiple concepts
+	this.searchControl.valueChanges    // form input
+	   .pipe(
+		  debounceTime(300),
+		  distinctUntilChanged(),
+		  switchMap(text =>
+			this.userService.search(text)
+		  ),
+		  catchError(() => of([]))
+	    )
+	We listen to searchControl.valueChanges, which emits every time the user changes the input. debounceTime(300) waits until no new value has been emitted for 300ms, 
+	preventing unnecessary API calls while the user is typing. distinctUntilChanged() prevents duplicate consecutive search terms from triggering another request. 
+	The resulting search term is passed to switchMap(), which calls userService.search().
+	If a newer search term arrives before the current request finishes, switchMap() cancels the previous request and starts a new one. 
+	If the API succeeds, the results are emitted downstream. If it fails, catchError() replaces the failed stream with a fallback empty array [], 
+	allowing the stream to continue without terminating. Finally, a subscriber (or Angular's async pipe) receives the results and updates the UI.
+
+
+
+Routing :- We configure routes once, Angular handles navigation. Angular changes the View, not the Page. There is only one index.html
+	/home 		→ HomeComponent
+	/about 		→ AboutComponent
+	/dashboard  → DashboardComponent
+		Angular watches the URL and decides: Which component should be displayed inside RouterOutlet?
+
+	index.html  ➜  <app-root></app-root>  ➜  Angular bootstraps  ➜  AppComponent  ➜ <router-outlet>  (Later when URL changes only router-outlet changes and nothing else)
+	Angular Routing Lifecycle :- Application Starts  ➜  AppComponent created  ➜  Header, Footer, Navbar and RouterOutlet are created  ➜  Router inserts the component matching the current route into the RouterOutlet  
+	➜  On route change:
+		• Previous routed component is destroyed (ngOnDestroy)
+		• RouterOutlet remains alive
+		• New routed component is created
+		• Header, Footer, Navbar, AppComponent and root services remain alive
+	
+	URL changes  ➜  Router reads URL  ➜  Searches Routes configuration  ➜  Finds matching Route  ➜  Gets Component Type  ➜  RouterOutlet destroys previous routed component  ➜  Creates new routed component  ➜  Dependency Injection injects services  ➜  Lifecycle executes  ➜  Template rendered
+	
+	AppComponent.ts
+		Suppose user navigates to /dashboard URL.	Routes will have { path: 'dashboard', component: DashboardComponent }
+														/dashboard route
+	<app-header></app-header>						<app-header></app-header>
+	<app-sidebar></app-sidebar>						<app-sidebar></app-sidebar>
+	<router-outlet></router-outlet>			=>		<app-dashboard></app-dashboard>
+	<app-footer></app-footer>						<app-footer></app-footer>
+		==> Only the content inside: <router-outlet></router-outlet> changes.
+
+	If the User navigates to some other route, Angular DESTROYS DashboardComponent and inserts new Component in DOM(RouterOutlet).
+	
+	// Modern Angular (No Lazy loading) (StandAlone Components)
+		App.Routes.ts													App.routing.module.ts  -- Before standalone components, Angular lazy-loaded modules.
+	export const routes: Routes = [									const routes: Routes = [
+	   {															{
+		  path: '',														path : 'consolidated-overview' ,  loadChildren: () => import('./consolidated-overview/consolidated-overview.module').then(m => m.ConsolidatedOverviewModule)
+		  component: HomeComponent									};
+	   },																// Angular downloads the Consolidated Overview whole module when /consolidated-overview is visited.
+	   {																// Consolidated Overview Module will also have its own Consolidated Overview Routing Module which will have { path: '', component: ConsolidatedOverviewComponent,},
+		  path: 'users',
+		  component: UsersComponent
+	   }
+	];
+		URL -> Match Route -> Create Component -> Insert into RouterOutlet
+		
+		Route matching is performed only against the URL path.
+			The following are ignored during matching:
+			• Query Parameters (?id=5)
+			• Fragment (#section)
+		
+**Main.ts will have bootstrap as 
+	Traditional Bootstraping: 	
+	platformBrowserDynamic().bootstrapModule(AppModule);
+		bootstrapApplication(AppComponent, {
+		  providers: [
+			provideRouter(routes)
+		  ]
+		});
+
+Standalone Components :  Angular introduced loadComponent()
+export const routes: Routes = [
+  {
+    path: 'home',
+    loadComponent: () => import('./home/home.component').then(c => c.HomeComponent)
+  }
+];
+
+main.ts wil have bootstrap as bootstrapApplication(AppComponent, {
+  providers: [
+    provideRouter(routes)
+  ]
+});
+
+Standalone Routing Flow :- User visits /home -> Router matches route  -> loadComponent() -> HomeComponent loaded  -> Component rendered
+
+
+Route Parameters: 
+	ID in Routes :-  users/:id
+		{
+		   path: 'users/:id',
+		   component: UserDetailsComponent
+		}
+	Angular matches the route and extracts the id, then Angular creates the UserDetailsComponent 
+
+** Angular provides a service called 'ActivatedRoute' which contains information about the current route.   
+		constructor( private route: ActivatedRoute ) {}
+		ngOnInit {
+			const id = this.route.snapshot.paramMap.get('id');
+			const id = this.route.snapshot.params['id'];						// params is an Observable
+			this.userService.getUser(id).subscribe(...);
+		}
+	In this case, if the route changes from users/101 to users/102   --> Angular will not destroy and recreate the comp, ngOnInit runs only once, so there will be no updates on the UI.
+	No constructor again. No ngOnDestroy.
+		Same Route Configuration  ->  Reuse ProductComponent  ->  Update ActivatedRoute  ->  Emit new parameter  ->  Component loads Product 102
+
+Reactive Way :- Instead of snapshot, Subscribe to the Observable
+
+	this.route.paramMap.subscribe(params => {
+      const id = params.get('id');
+	});
+	-- Now whenever route parameter changes: 101 → 102 → 103 we receive updates. As the route.paramMap is an Observable and we have subscribed to it. When route parameter changes, it emits new value.
+	-- ngOnInit in this case also runs only once Same Component is re-used, but the Observable is Subscribed so it emits all updates.
+
+	** When navigating between URLs that match the same Route Configuration, Angular reuses the existing component instance. 
+		Using ActivatedRoute.params (or paramMap) subscribes to future parameter changes, allowing the same component instance to react without being recreated.
+
+Query Parameters :- /users?page=2&sort=name        (Used for Filtering, Sorting, Paging, Searching)
+	Everything after: ? is a query parameter.
+	So Angular extracts: page = 2 & sort = name
+		const page = this.route.snapshot.queryParamMap.get('page');     - Not reactive
+		
+		this.route.queryParamMap.subscribe(params => { console.log(params.get('page'));});     -- Reactive Version (similar to paramMap)
+
+Nested Routing :- There can be multiple router-outlets in the Application.
+	const routes = [
+		{
+			path: 'admin', component: AdminLayoutComponent,
+			children: [
+				{ path: 'users', component: UsersComponent },
+				{ path: 'products', component: ProductsComponent }
+			]
+		}
+	];
+
+	/admin/products ➜ Angular starts creates AppComponent ➜ Header Footer ➜ Angular matches 'admin' in URL creates AdminComponent ➜ AppComponent's RouterOutlet(AdminComponent) ➜ Angular notices '/products' ➜ Matches the Children route config ➜ creates ProductsComponent ➜ AdminComponent's RouterOutlet(ProductsComponent)
+
+
+Route Guards :- Route Guards improve navigation control and user experience by preventing unauthorized navigation within the Angular application. 
+					However, they are not a security boundary because they execute entirely on the client. All authentication and authorization must still be enforced on the backend.
+	
+	export const authGuard: CanActivateFn = () => {
+	  const authService = inject(AuthService);
+	  const router = inject(Router);
+	  if (authService.isLoggedIn()) { return true; }
+	  return router.navigate(['/login']);
+	};
+	
+	{
+        path: 'admin',
+        canActivate: [AuthGuard],
+        component: AdminComponent
+    },
+	
+	If the User is not logged in and navigates to Admin, Route Guard should return this.router.createUrlTree(['/login']); OR return this.router.parseUrl('/login');
+	The Guard doesn't navigate. It tells the Router: This navigation should become /login instead. It follows Single Responsibility, Only Router Navigates and the Guard provides the route.
+
+	URL changes  ➜  Match Route  ➜  Find Route Configuration  ➜  Find Guard(s)  ➜  Execute Guard(s)  ➜  Allowed?  ➜  YES  ➜  Create Component  ➜  RouterOutlet
+
+	Overall Routing Flow :- Navigation Request  ➜  URL Matching  ➜  Find Matching Route  ➜  Run Guards  ➜  Run Resolvers (later)  ➜  Create Component  ➜  Insert into RouterOutlet  ➜  Lifecycle Hooks
+
+Most of the Web Applications follow :- Create Component First ➜ Load Spinner ➜ HTTP Request ➜ Data ➜ Update UI.
+
+Resolvers :- Fetch Data First, then Create the Component. User sees nothing until data is ready, then the page appears fully populated.
+	eg :- Many banking and enterprise systems choose because they don't want partially loaded financial data. & Edit Employee - The form cannot even exist until the employee information has been loaded.
+
+	Router loads data  ➜  Passes data to component  ➜  Component starts with everything
+	The Router owns data loading.
+	
+	Use when:
+		• Dashboard
+		• Product Listing
+		• Search Results
+		• News Feed
+		• Social Media Feed
+		• Amazon Home Page
+
+<input (input)="search($event.target.value)"> - Whenever the input is changed (any character typed, removed or updated), Every KeyStroke Search method is called.
+
+
+Reactive Forms :-
+	Reactive Form Control -> valueChanges (Observable) -> debounceTime() -> distinctUntilChanged() -> switchMap() -> HttpClient -> Interceptor -> Request Backend Server -> Response -> Change Detection -> UI Update
+		Reactive Forms convert user input into a stream of values (an Observable), allowing us to use the full power of RxJS to process those values.
+	
+	FormControl.valueChanges :- valueChanges is an Observable provided by Angular's FormControl. It emits a new value every time the value of the form control changes (typing, deleting, pasting, etc.).
+		A FormControl manages :- 
+			-> The current Value
+			-> Validation rules
+			-> Validation errors
+			-> Whether the field is Valid or InValid
+			-> Whether it has been Touched (Left the field) or UnTouched (User hasn't clicked it)
+			-> Whether it is Dirty (Value has changed) or Pristine (No Value Changes)
+			-> Whether it is Enabled or Disabled
+			-> Observable streams such as ValueChanges and StatusChanges
+
+	searchControl = new FormControl(''); -> class FormControl {
+	// empty value is provided to initialize	value = '';        valid = true;       invalid = false;
+												touched = false;   untouched = true;   dirty = false;
+												pristine = true;   disabled = false;   enabled = true;
+												errors = null;    valueChanges = new Observable();  statusChanges = new Observable();
+											}
+	## `touched`, `untouched`, `dirty`, and `pristine`
+	| User Action                                      | touched  | untouched  |  dirty    | pristine  | Reason                                                                                                  |
+	| ------------------------------------------------ | :-----:  | :-------:  | :-----:   | :------:  | ------------------------------------------------------------------------------------------------------- |
+	| Initial Page Load                                | ❌ False |   ✅ True  | ❌ False |  ✅ True  | User has not interacted with the field.                                                                 |
+	| User clicks inside the field (focus)             | ❌ False |   ✅ True  | ❌ False |  ✅ True  | Merely focusing the field does not mark it as touched.                                                  |
+	| User types a character                           | ❌ False |   ✅ True  | ✅ True  |  ❌ False | The value has changed, so the field becomes dirty. It is still focused, so it has not been touched yet. |
+	| User keeps typing                                | ❌ False |   ✅ True  | ✅ True  |  ❌ False | The field is already dirty. Nothing else changes.                                                       |
+	| User leaves the field (blur/tab/click elsewhere) | ✅ True  |   ❌ False | ✅ True  |  ❌ False | Leaving the field marks it as touched.                                                                  |
+	| User focuses again and changes the value         | ✅ True  |   ❌ False | ✅ True  |  ❌ False | Once touched and dirty, these states remain true.                                                       |
+	| Programmatically call `reset()`                  | ❌ False |   ✅ True  | ❌ False |  ✅ True  | The control returns to its initial state.                                                               |
+
+	FormControls :- 
+		Why? → To centralize everything related to one input field.
+		Problem? → Too many scattered variables and validation logic.
+		How? → It stores value, state, validation, and exposes Observables.
+		Production use? → Login forms, registration, search, checkout, profile editing, etc.
+	
+	** FormControlDirective - The FormControlDirective acts as a bridge between the HTML input and the FormControl object. The FormControl object itself doesn't know anything about HTML.
+	
+FromControl Flow :- User types 'K' → Browser fires input event → FormControlDirective is listening → It reads input.value → searchControl.setValue('K') → FormControl.value is "K" → FormControl emits valueChanges → Anyone subscribed gets notified
+	
+	<input [formControl]="searchControl">
+	this.searchControl.setValue('Rahul'); // This updates the HTML as well. This is a TWO-WAY communication.
+			-- Explicitly setting the Value from the TS. FormControl updates its internal State. As we know FormControl is only for TS, and FormControlDirective acts as a bridge b/w TS & HTML.
+			-- FormControl updates its internal state → Directive synchronizes the DOM.
+	Component → searchControl.setValue('Rahul') → FormControl.value becomes "Rahul" → FormControl notifies the FormControlDirective → FormControlDirective updates the native input element → Browser paints "Rahul"
+
+	** "Worst Implementaion"
+		searchControl = new FormControl('');
+		users: User[] = [];
+		loading = false;
+		ngOnInit() {
+			this.searchControl.valueChanges.subscribe(value => {               // Nested Subscription (RxJS Anti-Pattern)
+				this.loading = true;										   // Empty searches also hit the backend, No minimum search length
+				this.userService.search(value).subscribe(result => {           // Every keystroke calls the API, Duplicate values also call the API, Old HTTP requests continue running
+					this.users = result;									   // Race condition (Old response may overwrite latest), No Error Handling, Spinner may never stop
+					this.loading = false;
+				});
+			});																   // No unsubscription No takeUntil / No takeUntilDestroyed (Memory Leak)
+		}
+
+	** "Better Implementation"
+		searchControl = new FormControl('');
+		users: User[] = [];
+		ngOnInit() {
+			this.searchControl.valueChanges.pipe(
+				debounceTime(300),
+				distinctUntilChanged(),
+				switchMap(value =>
+					this.userService.search(value)							   // No Error Handling, No Clean Up, Empty or No Minimum Search, No Finalize 
+				)
+			).subscribe(users => {
+				this.users = users;
+			});
+		}
+
+	** "Producton Ready implementation"
+		searchControl = new FormControl('', { nonNullable: true });   		   // Only Non Nullable Values allowed
+		users: User[] = [];
+		loading = false;
+		ngOnInit() {
+			this.searchControl.valueChanges.pipe(
+				map(value => value.trim()),									   // Removing extra spaces from the text at alst and first
+				filter(value => value.length >= 2),							   // Minimum length is 2 characters
+				debounceTime(300),											   // Wait for user to stop typing
+				distinctUntilChanged(),										   // Ignore consecutive duplicate values
+				tap(() => this.loading = true),
+				switchMap(value =>
+					this.userService.search(value).pipe(
+						catchError(() => of([])),							   // Catching error with a fallback value of empty
+						finalize(() => this.loading = false)				   // Finalize to turn spinner OFF
+					)
+				),
+				takeUntilDestroyed()										   // Preventing Memory Leak after component is destroyed UnSubscribing the Observables
+			)
+			.subscribe(users => {
+				this.users = users;
+			});
+		}
+
+**PR Reveiw CheckList :- 
+	Observable → Subscription → Cleanup? → Error Handling? → Filtering Required? → debounceTime Needed? → distinctUntilChanged Needed? → Correct Mapping Operator? → Loading State Correct? → Fallback Value? → Update UI
+
+
+	Form Group :- When there are too many fields in the form, creating FormControl for each wont be the best solution. So we have a collection of all the FormControls.
+					"Collection of FormControls."
+						employeeForm = new FormGroup({    // employeeForm is the group of the collections. We can access the values like employeeForm.Value => { name: 'Kanishk', email: 'kanishk@gmail.com', age: 24 }
+							name: new FormControl(''),
+							email: new FormControl(''),
+							age: new FormControl(18),
+						});
+		
+		** Angular internally subscribes to all child controls.
+	User Input → FormControl updates → FormControl.valueChanges emits → FormGroup recalculates → FormGroup.valueChanges emits
+
+	FormControl -> Represents a single input element. Stores its value and state.
+	FormGroup   -> Represents an entire form. Groups multiple FormControls. Acts as the Single Source of Truth for the complete form. Maintains the value and state of every child FormControl.
+					Allows managing the whole form using a single object.
+		
+		Name : Kanishk													name: null
+		Email : kanishk@gmail.com	==>  employeeForm.reset(); ==> 		email: null   (All the values are made NULL (not the default value '' assigned at the time of creation))
+		Salary : 80000													salary: null
+	**Reset means "clear the form", not "go back to the constructor value."
+		After reset of the form Angular behaves as if User NEVER interacted with the form. "Pristine: True, Dirty: False, Touched: False, UnTouched: true".
+		Form Reset resets both "State and Value". 
+	
+	employeeForm.controls.name.reset(); -- In this case only that FormControl is reset everything else remains the same and FormGroup is also updated with the change(specific to that formControl).
+
+	* setValue() vs patchValue() :- 
+			setValue() updates all values.  It expects all the FormControl in group to be provided to update the value.
+						Backend Response → setValue() → Every FormControl must receive a value → Form updated
+				It throws Error (Data incomplete), if all the form controls are not present while setting the Value. (Developer Safety Feature.)
+					Use setValue() when expect the data source to provide a complete object. It acts as a validation mechanism by throwing an error if any required control is missing, helping catch integration bugs early.
+
+			patchValue() updates some values. It can update a specific FormControls in the group provided by the API. Only that specific FormControls change and Everything else remains unchanged.
+						Backend Response → patchValue() → Only provided FormControls updated → Remaining controls unchanged
+				It updates the FormControls provided and the missing controls are not touched at all.
+	
+	Why not always use patchValue() since it's more flexible?
+		Because flexibility can hide bugs. setValue() is intentionally strict and helps detect mismatches between the form model and the data source early, whereas patchValue() is designed for legitimate partial updates.
+
+Form Validations :- password = new FormControl('', [ Validators.required, Validators.minLength(8)]);  // This field is a required field. It is compulsory. It has minimum length of 8 chars.
+	Angular accepts Array of Validators.
+	Angular uses FormControl.errors to tell which Validator Failed. (eg. password.errors) It tells form is Invalid and Why.
+	
+		User Input → FormControl Value Updates → Validators Execute → errors Object Updated → valid/invalid Recalculated → FormGroup Recalculates Overall Status
+
+Async Validatiors :- Asynchronous (async) validators are special rules that check form inputs by requesting data from an external source.
+						Validations which would require API calls for Data Validation.(Unique Names Only)
+		username: new FormControl('', {
+			asyncValidators: [usernameExistsValidator()]
+		});
+	
+	Async Validators return Observables<ValidationErros | null>
+	
+	User Types → FormControl Value Updates → Sync Validators Execute → If Sync Validation Fails → Async Validator NOT Executed → Errors Updated
+
+	User Types → FormControl Value Updates → Sync Validators Execute → If Sync Validation Passes → Async Validator Executes → HTTP Request → Backend Response → Async Errors Updated → UI Updated
+
+	HTTP 500 Error, So the async validator fails.
+	In practice, the control usually ends up in a pending/error state until Angular processes the failure. This is why unhandled errors in async validators are considered a bug.
+		Always have catchError(() => of(null)) or alternate Fallback.
+
+** Frontend validation improves User Experience.  Frontend Validation → Better User Experience → Faster Feedback → Can Be Bypassed
+
+** Backend validation guarantees Data Integrity. Backend Validation → Security → Data Integrity → Final Source of Truth
+
+
+
+HTTP - Angular uses HttpClient for Rest APIs, backend Server communication.  this.http.get('/api/users')
+	Component -> HttpClient -> Interceptor(s) -> Backend API -> Response -> Interceptor(s) -> Component
+		With HttpClient
+			Component -> Declares HTTP Request
+			HttpClient -> Builds HTTP Request
+	
+	*Observable does not contain the data. It represents data that may arrive in the future.
+		
+	Flow:-	Component  -->  Calls UserService.getUsers()  -->  UserService calls HttpClient.get('/users')  -->  HttpClient creates an Observable<User[]> (No API call completed yet)  
+				-->  Observable is returned to Component  -->  **Component Subscribes  -->  HTTP Request is sent (Only if Observable is Subscribed) -->  Backend processes request  
+					-->  Response received  -->  Observable emits Users[]  -->  Subscriber receives Users[]  -->  UI updates
+	
+	Observables represent events over time, not just a final value. Started -> Succeeded / Failed -> Completed.
+	
+	Angular and RxJS commonly represent asynchronous streams and events using Observables, 
+	but not every asynchronous operation is inherently an Observable. (ValueChanges, Http Response, Router events, WebSockets)
+	
+	** HttpClient cannot return Users[] immediately because the server has not responded yet.
+		Instead it returns an Observable<User[]> which will emit Users[] in the future.
+			* Everything that needs to be done on the data or functionalities to be performed after data arrives is done in the Subscription and not outside that.
+			Code Outside Subcription is executed before the actual response is returned from the API. (Async)
+
+	** HttpClient.get() DOES NOT send the request.
+		It creates an Observable that KNOWS HOW to send the request.
+		The request is sent only when someone subscribes.  (Cold/Lazy Request)
+	
+	The Observable stores the instructions, not the result.
+	Every subscription starts a NEW execution because an Observable describes how to produce data, not the produced data itself.
+		Each subscriber independently executes those instructions.
+	
+Cold Observable :- Each subscription starts its own independent execution. Each subscriber gets its own data source. Nothing is shared automatically.
+	A cold Observable starts its producer logic each time someone subscribes. That means every subscription gets its own independent execution.
+
+** All the Observables in Javascript are Cold by default.
+
+
+When multiple different components have to call the same API and get the response. subscribing from each of the component would call the same API multiple times for the same response.
+shareReplay() :- Observable  -->  Subscribe  -->  HTTP Request  -->  Store Result  -->  Second Subscribe  -->  Reuse Stored Result  -->  NO Second HTTP Request
+		Execute the Observable once and then share the execution then Replay the last emitted value to all the future Subscribers. (Share - Replay)
+	
+	Component A  -->  Subscribe  -->  Execute Observable  -->  HTTP Request #1  -->  Store Last Response  -->  Replay Response  -->  Component B receives same response  -->  Component C receives same response  -->  Component D receives same response
+		Total HTTP Requests = 1
+
+	shareReplay() converts a cold observable into a multicasted observable.
+		The first subscriber triggers execution.
+		The emitted value is cached.
+		Later subscribers receive the cached value.
+
+this.http.get<User[]>('/users') :- 
+	HttpClient<T>  -->  The generic type T exists only at compile time.  -->  Angular DOES NOT validate or transform the JSON into T at runtime.  -->  It simply tells TypeScript what type we EXPECT.
+What does the generic <User[]> in HttpClient.get<User[]>() actually do?
+	"The generic is used only by TypeScript during compile time for type checking and IntelliSense.
+		It does not exist at runtime, and Angular does not validate or transform the JSON response into User[]. The backend response is trusted to match the expected shape."
+
+
+** HttpRequest is Immutable. You cannot modify the request directly. Immutability prevents accidental modifications.
+	Always use req.clone() - to modify Headers, params, Body, URL, Method
+
+HTTP Interceptors (Middleware Request Pipeline) :-  (Centralizing Requests, Authentication Header, Logging, Retry, Global loading spinner, Token Refresh)
+	Outgoing Request  -->  Interceptor  -->  Modify/Log/Spinner  -->  Server  -->  Incoming Response  -->  Interceptor  -->   Modify  -->  Component
+		It is kind of a Middleware Request Pipeline.
+
+	HTTP Interceptor in Angular is a class that sits between your application and the HTTP server. It intercepts every request sent through HttpClient and every response received from the server.
+	It can inspect, modify, or handle every HTTP request and response made through HttpClient.
+		export class AuthInterceptor implements HttpInterceptor {
+			intercept(req, next) {
+				return next.handle(req);
+			}
+		}
+	req - HttpRequest(It contains current HTTP request that is about to be sent. URL, HttpMethod, Headers, Body).
+	next - HttpHandler(It represents the next step in the HTTP pipeline. Its job is to forward the request, if next there is no Interceptor, request goes to Server).
+		Request -->  Interceptor A  --next.handle(req)-->  Interceptor B  --next.handle(req)-->  Interceptor C  --next.handle(req)-->  Server
+		next.handle() returns an Observable<HttpEvent<any>>
+		If there is no next in an Interceptor, Observable emits nothing Backend never receives any request and component keeps waiting forever.
+	
+	Angular HttpInterceptor is the client-side equivalent of ASP.NET Core Middleware.
+	Both intercept requests before they reach the destination and responses before they reach the caller.
+	
+	* Interceptors only work with Angular HttpClient. They do not intercept fetch() or XMLHttpRequest used directly. Keep interceptors focused on cross-cutting concerns; avoid business logic.
+
+	Token refresh Flow :- Access Token Expired → API Returns 401 → Interceptor Catches 401 → Call Refresh Token API → Receive New Access Token → Retry Original Request → Return Response
+
+	Functional Interceptors (Angular 16+) :- HttpInterceptorFn  --> export const authInterceptor: HttpInterceptorFn = (req, next) => { return next(req); };
+		-> It's shorter and focuses only on the logic. Less Boilerplate(less repeatation). Less Framework.
+		-> Better tree shaking Functions are easier to analyze than classes. Functions are much easier for the compiler to analyze. Better performance.
+		-> Simpler DI instead of constructors we can directly inject
+
+	Registering an Interceptor :- 
+		bootstrapApplication(AppComponent, {
+		  providers: [
+			provideHttpClient(
+			  withInterceptors([
+				authInterceptor,
+				errorInterceptor
+			  ])
+			)
+		  ]
+		});
+
+JWT Authentication Flow using Interceptors :- 
+
+	| Storage                  | Survives Refresh | Survives Browser Close | Common Use                                            |
+	| ------------------------ | ---------------- | ---------------------- | ----------------------------------------------------- |
+	| Memory (BehaviorSubject) | ❌               | ❌                     | Very secure, loses login on refresh                   |
+	| Session Storage          | ✅               | ❌                     | Banking / enterprise apps                             | Closing the browser ends the session.
+	| Local Storage            | ✅               | ✅                     | Most web applications                                 |
+	| HttpOnly Secure Cookie   | ✅               | ✅                     | Highest security (recommended by many security teams) |
+
+	JWT Refresh Token Flow :-
+		Token Valid --> API Request --> 401 ? 	│--> Yes  -->  Refresh In Progress   ──── -->  Yes  -->  Wait
+												│										│ -->  No   -->  Refresh Token
+												└────--> No --> Request Complete 
+		
+		Access Token Expired -> Request 1 -> 401 -> AuthInterceptor isRefreshing == false -> Set isRefreshing = true -> POST /refresh-token
+			While isRefreshing = true, Don't Send New Refresh Request Wait on BehaviorSubject. Race condition, Server Load (Already one request is in progress)
+			Requests are not checking repeatedly if isRefreshing false now or not. When the New Token arrives BehaviorSubject emits the value and it reaches everyone.
+			NEW_ACCESS_TOKEN is returned, AuthInterceptor sessionStorage.setItem(...) -> BehaviorSubject.next(newToken)  Now All the Waiting requests Retry.
+	
+		Single Responsibility Principle.
+			Session Storage - Stores token permanently    (All New Requests take the Token from Session Storage)
+			BehaviorSubject - Notifies waiting requests   (All the Waiting Requests take value from BehaviorSubject Subscription)  (On refresh of Application Value in BehaviorSubject is lost and User gets Logged Out)
+		Session Storage remembers the token. BehaviorSubject announces that the token has changed.
+	
+	User Login -> Server Login API -> Refresh Token & Access Token -> Stored them in Session Storage.
+		All the Requests go through AuthInterceptor.
+			
+			private isRefreshing = false;
+			private refreshSubject = new BehaviorSubject<string | null>(null);
+			
+			export const authInterceptor: HttpInterceptorFn = (req, next) => {
+				const token = sessionStorage.getItem('accessToken');
+				const authReq = req.clone({
+					setHeaders: { Authorization: `Bearer ${token}` }
+				});
+				return next(authReq).pipe(
+					catchError(err => {
+						if(err.status == 401){          				// If Access Token Expires
+							if(isRefreshing == false){ 					// If isRefreshing is false No Refresh request has been sent, so "Send Refresh Request"
+								isRefreshing = true;
+								this.refreshSubject.next(null);        	// This is done so that the latest value becomes null (when refresh is in progress) and it does not store the previous Access Token. Clear before Refreshing.
+								return authService.refreshToken().pipe(
+								  switchMap(response => {
+									  sessionStorage.setItem("accessToken", response.accessToken);
+									  this.isRefreshing = false;
+									  this.refreshSubject.next(response.accessToken);     // New Access Token is emitted to all the Subscribers, so that the Retry of the API request can happen.
+									  return next(
+										req.clone({
+											setHeaders: { Authorization: `Bearer ${response.accessToken}` }
+										})
+									  );
+							} else {  					// Wait, Someone is already refreshing.	New requests Subscribe to refreshSubject, so they can be retried.
+								return refreshSubject.pipe(
+									filter(token => token != null),      	// If token is null, meaning it wont pick the previous Token in refreshSubject, else it would again give 401. Only take new value (Not Null Token value)
+									take(1),								// Only 1 value is accepted and then Observable completes and is UnSubscribed. No Values after that. If this is not included, previous old requests would wake up again when New Token arrives and make API request.
+									switchMap(token => {
+										return next(
+											req.clone({
+												setHeaders: { Authorization: `Bearer ${response.accessToken}` }
+											})
+										);
+									})
+								);
+							}
+						}
+						return throwError(() => error);
+					}
+				);
+			}
+
+
+Signals :- Signals are a reactive state management feature introduced in Angular (Angular 16+).
+	A Signal is a wrapper around a value that automatically tracks where it is used and updates the UI when its value changes.
+		Instead of Angular checking everything (change detection), signals tell Angular exactly what changed.
+		Angular re-renders the affected template/view, but that's not the same thing as the old global change detection traversal.
+	
+	Signals reduce unnecessary component checks by allowing Angular to know exactly which views depend on changed state.
+	
+	count = signal(0);   // count is a signal, initial value is 0
+		Signals are read like a function. "{{ count() }}"
+	count.set(10);
+	count.update(value => value + 1);
+
+	Before Signals - Button Click  ➜  Run Change Detection ➜ Check every binding ➜ Compare values ➜ Update ➜ changed DOM
+		Even with OnPush, Angular still needs to evaluate the bindings in the components it decides to check.
+	
+	After Signals - The data itself announces the change. Angular does not have to check all the bindings.
+	Dependency Tracking - Signals perform dependency tracking automatically.
+	
+	Angular  ➜  "I'm calculating doubleCount."  ➜  Current = doubleCount  ➜  count() called  ➜  count says doubleCount uses me  ➜  Remember that.
+		Dependency Graph is created and stored for later purpose.
+	
+	*Signals build the dependency graph automatically during execution.
+		Signals → Eliminate most of those checks by knowing dependencies exactly.
+	
+	Signal ➜ Signal Dependency Graph :-  
+	A computed signal derives its value from one or more other signals and automatically recalculates when its dependencies change.
+		price = signal(100);
+		tax = signal(20);
+		total = computed(() => this.price() + this.tax());   // 120
+	
+	An effect automatically runs a function whenever the signals used inside it change. It is useful for side effects such as logging, syncing with storage, or calling external APIs.
+	
+	
+	** Signals don't build the graph once. They build it every time the computation or effect executes. Signals rebuild their dependency graph on every execution based on the Signals that are actually read.
+
+		showSalary = signal(false);                 // As showSalary is false, Dependency Graph is only showSalary ➜ EmployeeInfo   If showSalary is false, while creating DependencyGraph flow wont go inside if() condition.
+		name = signal("Kanishk");					// name ➜ EmployeeInfo  (Same for both showSalary true or false as both condition return name() for EmployeeInfo)
+		salary = signal(100000);					// salary ➜ EmployeeInfo (only if showSalary is true) showSalary is true, execution goes inside if() and Now EmployeeInof is calculated using name && salary. So the Dependency Graph is updated.
+		employeeInfo = computed(() => {
+			if (showSalary()) {
+				return `${name()} - ${salary()}`;
+			}
+			return name();
+		});
+			// If showSalary is true, Whenever Any of the showSalary or salary or name is updated then EmployeeInfo is updated
+			// If showSalary is false, Whenever showSalary or name is updated then EmployeeInfo is updated  (No Dependency on salary)
+	
+	Html ➜ Signals Dependency  (TEMPLATE + Signals)
+		When the component renders for the first time Angular has to execute the template. During that first render Angular automatically registers the dependency.
+			count = signal(10);
+			double = computed(() => count() * 2);
+			HTML - {{ double() }}						// Dependency :- count ➜ double ➜ Template (HTML)   => count changed ➜ double recoumputed ➜ Template notified ➜ re-render
+		DependencyGraph :- count  ➜  double  ➜  CounterComponent Template  ➜  DOM
+
+	Signal ➜ Coumpted Signal ➜ Components in Dependency Graph ➜ Template ➜ DOM
+
+	effect() :- When Angular creates each effect, It executes it once. Angular notes the dependencies as well. All the effects are added to the DependencyGraph.
+	
+	** When a Signal changes, Angular notifies every reactive consumer (computed, effect, or template) that directly depends on that Signal. 
+		Each consumer is then re-executed so it can produce an updated value or perform its side effect.
+		Effects SHOULD not be used to propagate state. It is technically allowed, architecturally discouraged.
+			
+			effect(() => {	
+				console.log(count());
+				if (count() < 5) {
+					count.set(count() + 1);			// Set method is used in effect(), Angular TECHNICALLY ALLOWS the set value and it also updates the state.
+				}
+			});  // signal value is updated till 5 loop runs logs 0 1 2 3 4 5 and then stops
+		** Effects can technically update Signals, but they generally should not. Effects are intended for side effects rather than propagating application state. 
+		State derivation should be done with computed(), while effect() should be reserved for actions such as logging, persistence, analytics, or interacting with external APIs. 
+		Updating Signals inside effects can easily create circular dependencies or infinite loops and is therefore discouraged.
+
+	
+	signal() - Hold the data
+	computed() - Calculate new data from existing signals/data.
+	effect() - Whenever dependencies change, run this code. It doesn't return anything or update any value. No Calculations.  (Logging, Analytics, session/local storage saving, etc.)
+				Effects are reactive consumers that execute side effects whenever the Signals they read change. They do not produce new values like computed(). 
+				Instead, they perform actions such as logging, synchronizing data, saving to storage, analytics, or interacting with external systems. They exist alongside template updates—they do not replace them.
+	| Primitive    | Purpose              | Returns Value? | Should Update Signals?                 |
+	| ------------ | -------------------- | -------------- | -------------------------------------- |
+	| `signal()`   | Store state          | ✅ Yes         | Yes (`set()`, `update()`)              |	
+	| `computed()` | Derive state         | ✅ Yes         | ❌ No (pure calculation)               |
+	| `effect()`   | Perform side effects | ❌ No          | ⚠️ Technically yes, architecturally no |
+
+	** Signals replace a lot of state management, not asynchronous stream processing. It should not be merged with RxJS. It should only be used to update or set the local Application State.
+	If required Convert the Signal to an Observabel. toObservable(search).pipe(....)
+
+
+Change Detection :- 
+	1. Default Change Detection
+		Any Event (Button Click, Timer, HTTP Response, Promise, etc.)  ➜  Zone.js notifies Angular  ➜  Angular starts Change Detection  ➜  Traverses the Component Tree  ➜  Checks every component  ➜  Evaluates all template bindings  ➜  Updates DOM wherever values changed
+			• Entire component tree is traversed.
+			• Every component is checked.
+			• Angular does not know exactly which data changed.
+			• Angular discovers changes by evaluating bindings.
+
+	2. OnPush Change Detection
+		Any Event  ➜  Angular starts Change Detection  ➜  Traverses Component Tree  ➜  Skips OnPush components  ➜  Unless one of the following occurs:
+			• @Input reference changes, Event originated inside component, async pipe emits, markForCheck(), detectChanges()
+			• Angular still performs Change Detection.
+			• Component tree traversal still happens.
+			• Many components are skipped.
+			• Performance improves because unnecessary component checks are avoided.
+	
+	3. Signals 
+		Signal changes  ➜  Dependent Signals (computed) update automatically  ➜  Dependent effects execute automatically  ➜  Angular already knows which Component/View uses that Signal  ➜  Only that Component/View is marked for refresh  ➜  Angular re-executes only that template  ➜  DOM updates
+			• No global Change Detection traversal from the application root.
+			• No searching for affected components.
+			• Angular already knows the dependency graph.
+			• Only affected views are refreshed.
+			• Fine-grained reactivity.
+
+
+tsconfig.json is the configuration file for the TypeScript compiler (tsc). It tells TypeScript how to compile your code, what files to include, and which language features and type-checking rules to enforce.
+
+Configure compilation settings
+You can specify how TypeScript should generate JavaScript.
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "NodeNext",
+    "outDir": "./dist"
+  }
+}
+target → JavaScript version to generate.
+module → Module system to use.
+outDir → Where compiled files should be placed.
+
+Interceptor.service.ts
+An http-interceptor.service.ts file in an Angular application is typically used to implement an HTTP Interceptor—a piece of code that can inspect, modify, or react to every HTTP request and response made through Angular's HttpClient.
+
+Think of it as middleware that sits between your application and the server.
+Component
+    ↓
+Service
+    ↓
+HttpClient
+    ↓
+HTTP Interceptor
+    ↓
+Backend API
+
+Every request passes through the interceptor before being sent, and every response passes through it before reaching your code.
+
+Uses
+1. Add Authentication Tokens, Instead of manually adding headers everywhere
+2. Global error handling
+3. Show/hide a loading spinner When a request starts
+4. Log reqs and resp
+
+
+
+Real-world Gotchas (Things tutorials rarely tell)
+
+
+switchMap() :- 
+	Gotcha 1 - Using switchMap for a Save button can silently cancel earlier save requests if the user clicks multiple times.
+				If every save must reach the server, mergeMap or concatMap may be more appropriate depending on the business requirement.
+	Gotcha 2 - switchMap unsubscribes from the client-side observable, but the server may still continue processing the request. Cancellation isn't guaranteed to stop backend work.
+	Gotcha 3 - If you need previous results (e.g. chat history or uploads), switchMap is the wrong choice because older emissions are discarded.
+
+OnPush :- 
+	Mutating an object doesn't change its reference, so an OnPush child may not update.
+		user = { ...user, name: "John" };
+
+trackBy :-
+	Gotcha - Using trackBy with the array index works until the list is sorted or items are inserted. Then Angular reuses the wrong DOM elements, causing subtle UI bugs.
+
+BehaviorSubject :- 
+	Gotcha - Calling .next() from many unrelated components makes it difficult to trace where state changes originate. As an application grows, centralizing state updates becomes easier to maintain.
+
+Interceptors :-
+	Gotcha - Forgetting to clone a request before modifying it causes runtime errors because HttpRequest objects are immutable.
+
+Routing : -
+	Gotcha - Navigating between /users/1 and /users/2 often reuses the same component instance. Relying only on snapshot means the UI won't react to parameter changes.
+
+Async Pipe :-
+	Gotcha - Don't combine the async pipe with manual subscriptions to the same observable unless there's a clear reason—you can end up with duplicate work or confusing state.
+
+DI :-
+	Gotcha - Providing a service in a component instead of at the application level creates a new instance. Developers sometimes think they're sharing state but accidentally create isolated instances.
+
+Change Detection :-
+	Gotcha - Calling methods directly from templates can hurt performance because Angular may invoke them repeatedly during change detection. Prefer computed values or observables when possible.
+
+Services :-
+	Gotcha - Avoid turning one service into a "god service" that handles authentication, users, products, orders, notifications, and more. Split responsibilities as the application grows.
+
+HTTP :-
+	Gotcha - Don't subscribe inside a service just to return data. Let the service return the observable so the caller decides when and how to subscribe.
+
+
+What Would Make Me Think "This Person Has 3–5 Years"
+
+
+
+1. What is the difference between Template-Driven Forms and Reactive Forms?
+2. How does Change Detection work in Angular?
+3. What is the purpose of RxJS Observables?
+4. Difference between Subject, BehaviorSubject, and ReplaySubject.
+5. How do you handle an API that takes 10 seconds to respond without freezing the UI?
+6. How would you display 1,000 records in Angular without pagination?
+7. What is Lazy Loading and why is it used?
+8. Difference between ngOnInit() and Constructor.
+9. How do you implement route guards?
+10. What are Angular Interceptors and where have you used them?
+
+
+🔹 ANGULAR CORE
+
+1. What is Angular?
+2. Angular vs React?
+3. What is a component?
+4. What is a module?
+5. What are standalone components?
+6. What are directives?
+7. Structural vs attribute directives?
+8. What are pipes?
+9. Pure vs impure pipes?
+10. What is dependency injection?
+
+🔹 COMPONENTS & DATA FLOW
+
+11. What is component lifecycle?
+12. Explain ngOnInit().
+13. ngOnChanges() vs ngDoCheck()?
+14. What is ViewChild?
+15. ContentChild vs ViewChild?
+16. What is content projection?
+17. What is @Input()?
+18. What is @Output()?
+19. How does event binding work?
+20. What is two-way binding?
+
+🔹 SERVICES & DI
+
+21. What is an Angular service?
+22. How does hierarchical DI work?
+23. providedIn: 'root' — what does it mean?
+24. Singleton service vs multiple instances?
+25. How do you share data between components?
+
+🔹 RXJS & OBSERVABLES
+
+26. Observable vs Promise?
+27. Subject vs BehaviorSubject?
+28. What is ReplaySubject?
+29. What does pipe() do?
+30. switchMap vs mergeMap?
+31. concatMap vs exhaustMap?
+32. What is debounceTime()?
+33. How do you prevent memory leaks?
+34. What does async pipe do?
+35. How do you handle RxJS errors?
+
+🔹 ROUTING & FORMS
+
+36. How does Angular routing work?
+37. What are route guards?
+38. What is lazy loading?
+39. What are resolvers?
+40. Template-driven vs Reactive Forms?
+
+🔹 PERFORMANCE & ADVANCED
+
+41. Default vs OnPush change detection?
+42. How do you optimize Angular performance?
+43. What is trackBy?
+44. How does lazy loading improve performance?
+45. How do you reduce unnecessary change detection?
+46. How do HTTP interceptors work?
+47. How do you handle global API errors?
+48. How do you secure an Angular application?
+49. How would you structure a large Angular application?
+50. How would you troubleshoot a slow Angular application?
+
+
+I would expect discussion of things like:
+
+CanDeactivate
+Lazy loading strategies
+Feature modules vs standalone architecture decisions
+Functional providers
+Signal Inputs
+Deferrable Views
+Rendering strategies
+Template performance
+ChangeDetectorRef nuances
+ViewContainerRef
+Dynamic components
+Content projection
+TemplateRef
+Environment providers
+InjectionToken
+Multi providers
+APP_INITIALIZER (or its modern alternatives)
+HTTP pipeline internals
+SSR
+Hydration
+Testing
+Angular DevTools
+Performance profiling
+
+Standalone bootstrap
+
+Host directives
+
+Dynamic Components
+
+ViewContainerRef
+
+ComponentRef
+
+Portal API
+
+CDK Overlay
+
+Dynamic Injection
+
+Projection internals
+
+Signals Inputs
+
+DestroyRef
+
+Host bindings
+
+Host listeners
+
+Injection Context
+
+Environment Injector
