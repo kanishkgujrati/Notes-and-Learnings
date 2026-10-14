@@ -1052,6 +1052,8 @@ I - ISP - Interface Segregation Principle - Any Code should not be forced to use
 
 D - DIP - Dependecy Inversion Principle - Higher Level Module should not depend on Lower level Module directly, rather it should Access it via Interface
 	Higher Module -> Interface -> Lower Module (Abstraction)
+		We should not directly depend on creation of objects of classes, we should go for interface or abstract classes.
+			We used to create classes and create objects then we called the methods, Instead we can use interface and call the methods.
 	
 DRY Principle - Do Not Repeat Yourself
 -> Write a code once and inherit it in multiple places wherever required.
@@ -1359,6 +1361,24 @@ To Be Done - Once all of this is Sure and Guaranteed
 9. Saga Pattern, Outbox Pattern
 
 
+What is Content Negotiation ?
+	Content negotiation is the process by which a client and server agree on the format of the data being exchanged. 
+	The client tells the server what representation it can accept, and the server responds in the most appropriate format.
+		Accept (which format can client handle) & Content-Type (format of data being sent in the request) - HTTP Headers
+
+What are the security measures took by the Web API Server ?
+	Authentication and Authorization Middlewares, JWT Token based Auth, CORS Policy, API Key based Auth
+
+What are the different REST Principles we have ?
+	REST stands for Representational State Transfer.
+	REST Principles are used to design and develop capable and effecient Web Services. 
+		CS-S-C-U-L
+		➜ Client and Server Architecture, they should be separate.	
+		➜ APIs must be Stateless. All the APIs should contain all relevant information Server needs to process the request.
+		➜ Cacheability - Responses should indicate whether they can be cached. Better Performance.
+		➜ Layered Architecture - Controller Service Repositories
+		➜ Uniform Interface - HTTP methods Get, Put, Post, Patch, Delete
+
 What is the difference between Middleware and Filters?
 		Middleware					Filters ([Authorize], Action, Custom, Exception Filters)
 	Works at the HTTP request pipeline level	Web API Pipeline, Works within MVC/Controller/Razor Pages execution
@@ -1377,7 +1397,16 @@ How do you implement Global Exception Handling in .NET Core?
 	Custom Exception Middleware app.UseMiddleware<ExceptionMiddleware>();
 	
 	Using exception-handling middleware, because middleware sits at the HTTP pipeline level and can catch unhandled exceptions from downstream middleware, filters, controllers, and other components. 
-		I would log the exception and return a consistent error response, preferably using ProblemDetails.
+		I would log the exception and return a consistent error response, preferably using **ProblemDetails**.
+	
+	To create a CustomMiddleware - 
+		➜ Define a class with InvokeAsync method -- public async Task InvokeAsync(HttpContext context), 
+		➜ Add a request delegate in the Constructor -- public LoggingMiddleware(RequestDelegate next){},
+		➜ Have a await _next(context) in the InvokeAsync method and add logs before and after the await _next
+		➜ Register the middleware in the request pipeline add the top (Program.cs or Startup.cs)
+
+How to implement Model Validations ?
+	Use Data Annotations in the model like [Required], [StringLength], [Range], [MaxLength] / [MinLength], etc.
 
 Explain Circuit Breaker Pattern with a real-world example.
 	Circuit Breaker is a resilience pattern used in distributed systems to prevent repeated calls to an unhealthy downstream service. It has 3 states: Closed, Open, and Half-Open.
@@ -1396,7 +1425,7 @@ Difference between Synchronous and Asynchronous Communication.
 	await httpClient.GetAsync(url); This is asynchronous programming, because the thread doesn't need to block while waiting for I/O, but it's still Synchronous communication.
 		Thread is free to do other work, It is not Blocked.
 	
-	Use synchronous communication when:  In synchronous communication, the caller sends a request and waits for the receiver's response before continuing. REST and gRPC are common examples
+	Use synchronous communication when:  In synchronous communication, the caller sends a request and waits for the receiver's response before continuing. REST and gRPC are common examples.
 		You need an immediate response.
 		The caller cannot continue without the result.
 		You need a simple request/response interaction.
@@ -1427,9 +1456,10 @@ How do you secure APIs in Microservices architecture?
 	Client ➜ API Gateway ➜ Authentication / Authorization ➜ Microservice A ➜ Microservice B ➜ Database
 
 What is API Gateway and why is it required?  (Reverse Proxy)
-	An API Gateway is a server that acts as the single entry point for all client requests to your backend services (microservices or APIs). Instead of Clients talking directly to the Server.
+	An API Gateway is a server that acts as the single entry point for all client requests to your backend services (microservices or APIs). 
+		Instead of Clients talking directly to the Server. If the Servers are directly exposed to the Clients risks are very high of any threat.
 	
-	Authentication, Authorization, Logging, Monitoring, Request Routing, Rate Limiting, Caching, API Versioning
+	Purpose: Authentication, Authorization, Logging, Monitoring, Request Routing, Rate Limiting, Caching, API Versioning.
 
 How do you handle distributed transactions?
 	In a microservices architecture, a distributed transaction happens when one business operation needs to update data in multiple services/databases.
@@ -1489,14 +1519,126 @@ What are boxing and unboxing in C# where can they occur in real time application
 		
 	Older collections such as ArrayList expects object, but 10 is an int. Modern C# normally uses generic collections instead, it avoids boxing in normal use.
 
+Why do we use DTOs instead of exposing EF Core entities directly?
+	DTOs (Data Transfer Objects) are used to separate your API's data contract from your EF Core persistence model.
+	If you expose EF Core entities directly, your database model effectively becomes your public API model.
+		A DTO lets you explicitly control what clients can send. The DTO defines exactly what the consumer gets.
+		
+		EF entity = how your application persists data.
+		DTO = how your application communicates data.
 
-12. How does Authentication and Authorization work in your application?
+Task vs Thread — when would you use each?
+	A Task represents asynchronous work. A Thread represents an actual OS execution thread.
+		Task in async method :- While the database is doing its work, your thread doesn't need to sit there waiting.
+	
+	Directly creating a Thread is relatively uncommon in modern .NET.
+	
+	I generally use Task for asynchronous and concurrent operations because it integrates with async/await, uses the ThreadPool efficiently, and makes composition and exception handling easier.
+
+What happens when a Singleton service depends on a Scoped service?
+	A Singleton lives for the entire application lifetime, while a Scoped service normally lives for one request. 
+	If the Singleton directly depends on the Scoped service, you're effectively trying to make the Singleton hold onto something that is supposed to be short-lived.
+		In the default ASP.NET Core DI container, you'll typically get an exception when the application is built.  InvalidOperationException
+	
+	If no other option: Use IServiceScopeFactory to create the Scoped Instance whenever required.
+		The Singleton doesn't retain the scoped service; it creates a scope when needed and disposes it afterward.
+	
+
+What is Generic and why is it used ?
+What is Runtime Polymorphism / Method Overriding ?
+	Runtime polymorphism is an OOP concept where the method that gets executed is determined at runtime based on the actual object type, rather than the reference type.
+		Achieved through method overriding, where a child class provides its own implementation of a method inherited from the parent class.
+	
+	Method overriding → Runtime polymorphism
+		Add(int a, int b)
+		Add(int a, int b, int c)
+	Method overloading → Compile-time polymorphism
+		Animal.Speak() 	// Animal class will have a virtual method Speak   -- public virtual void Speak()
+		  ↓
+		Dog.Speak()		// Child class Dog -- class Dog : Animal has overriden method  -- public override void Speak()
+
+What do we do about the unmanaged resources ?
+	Unmanaged resources are resources that are not directly managed by the .NET garbage collector, such as file handles, database connections
+	Garbage Collection handles managed memory.
+		We should explicitly release them once used. We have to use IDisposable and the using statement.
+
+
+Explain about TPL in detail.
+	TPL stands for Task Parallel Library. A set of APIs in .NET used to simplify writing concurrent and parallel code.
+		It provides Task and features like Parallel loops, task scheduling, and cancellation.
+	Task - represents an asynchronous operation.
+	Parallel.for and Paralle.foreach - Executes independent iterations in parallel.
+	Cancellation - Uses Cancellation Token
+	Task Scheduler
+	
+	Task.Wait() blocks the current thread until completion.
+	Task.WhenAll() waits asynchronously for multiple tasks to complete.
+
+Entity Framework
+	In our project, the database and its schema were already available, so we followed the Database-First approach using Entity Framework Core.
+		➜ First, we install the required EF Core packages and the database provider.
+		➜ Then we scaffold the existing database. Scaffolding reads the database schema and generates the corresponding entity/model classes and a DbContext class.
+		➜ The generated DbContext acts as the bridge between our application and the database. It contains DbSet properties for the entities and the database configuration.
+		➜ We register the DbContext with ASP.NET Core's Dependency Injection using AddDbContext and provide the ConnectionString.
+
+What is Entity Data Model ?
+	It is a kind of an Abstraction layer between Database and the Application. Server code can use these models to access the DB entities.
+	In Entity Framework, database tables are represented as entities/classes, columns are represented as properties and  one-to-many, man-to-many.
+
+Entity States :- Tracked, Unchanged, Modified, Added, Deleted, Detached.
+	We have Entity Framework Profiler which highlights slow queries. It detects redundant, N+1 query problem, missing Indexes.
+		Multiple queries being fetched related to same data instead of single optimized query. 
+
+What is the N+1 query problem, and how do you solve it?
+	The N+1 query problem occurs when an application executes one query to fetch a list of records and then executes an additional query for each record to fetch related data. 
+	So, for N records, we end up making 1 + N database queries. This can cause significant performance problems, especially when N is large.
+		Get all Customers -> Get all Orders for each Customer  // 1 query → Get all customers + 100 queries → Get orders for each customer
+	
+	Solution :- Eager loading with Include()  -- tells EF Core to retrieve the customers and their related orders.
+				Projection with Select()      -- to retrieve only the data required by the API, instead of the whole entity
+
+Pros and Cons of Indexes.
+	Indexes are used to improve the performance of data retrieval operations.
+	
+		Pros: Select Query becomes significantly fast, provides effective Sorting and Filtering.  // because the database can locate the required rows without scanning the entire table.
+		Cons: High Storage cost, Slower Insert, updates and deletes.
+				With Indexes, Data is stored in a Sorted format so that is why they are slow.
+
+Best practices followed for Stored Procedures
+	➜ Use meaningful names
+	➜ Use parameters instead of dynamic string concatenation
+	➜ Select only the required columns
+	➜ Use proper error handling
+	➜ Use transactions when multiple operations
+	➜ SET NOCOUNT ON;  -- This prevents SQL Server from sending row-count messages for every statement and can reduce unnecessary network traffic.
+
+AAA principle for Unit Testing
+	Arrange, Act, and Assert
+		Arrange: Set up everything required for the test. Create the object under test. Prepare input data. Configure mocks or dependencies.
+		Act: Execute the specific method or operation being tested.
+		Assert: Verify that the actual result matches the expected result.
+
+Test Pyramid: 
+	Test Pyramid is a testing strategy.
+		Top: end-to-end tests. E2E  (Login page → Enter username/password → Submit → API → Database → Dashboard displayed)
+		Middle: few integration tests.   (API → Service → Repository → Database)
+		Bottom: a large number of fast, reliable unit tests  (Added in the Server Code)
+
+What is Code smell ?
+	A code smell is a characteristic or pattern in source code that indicates a potential design or maintainability problem. 
+	It doesn't necessarily mean the code is incorrect, but it suggests that the code may need refactoring.
+		Long Method - doing too many things
+		Large Class / God Class - too many responsibilities
+		Duplicate Code
+		Tight Coupling
+		Long Parameter List
+		Deeply Nested Code
+
 13. Explain the JWT Authentication flow from Angular to .NET API.
 16. How do you integrate third-party APIs?
 
+
 What factors would you consider before introducing Redis caching into an application?
-When can async/await actually hurt performance?
-What happens when a Singleton service depends on a Scoped service?
 
 How MediatR pipeline behaviors are wired ?
 How the refresh token rotation actually invalidates old tokens ?

@@ -42,8 +42,21 @@ messaging, SSIS/ETL, HangFire, GitHub Actions, Docker and CI/CD. Strong foundati
 Dependency Injection, Clean Architecture, and System Design, with a focus on building Maintainable, Reliable, and Scalable 
 software solutions.
 
+Full Stack Software Engineer with 2+ years of experience in Enterprise Applications, specializing in .NET, C#, Angular and SQL 
+Server. Proven experience in Application Performance Optimization, reducing application load time from 10s to 4s through code, 
+database, and architectural optimizations. Hands-on with eESB messaging, SSIS/ETL, Hangfire, Azure Devops, Docker and CI/CD. 
+Strong foundation in OOP, SOLID principles, Clean Architecture with a focus on building Maintainable, Reliable, and Scalable 
+software solutions.
+
 
 Linkedin : https://www.linkedin.com/in/kanishk-gujrati-a45309224/
+
+GitHub:
+https://github.com/kanishkgujrati
+
+Interview Introduction :- 
+Hi I am Kanishk, I have 2+ years of Experience in Software Development, primarly working on .Net Technologies and Angular Framework and SQL Server.
+Throught the experience I have been designing and developing High Performance Applications using C#, .Net, Angular and SQL Server.
 
 
 Brady Technologies - Senior Software Engineer - Talk to Navaladi   https://bradyplc.bamboohr.com/careers/367?source=aWQ9NA%3D%3D     https://www.linkedin.com/jobs/view/4368999691/

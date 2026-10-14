@@ -1176,6 +1176,7 @@ What does the generic <User[]> in HttpClient.get<User[]>() actually do?
 ** HttpRequest is Immutable. You cannot modify the request directly. Immutability prevents accidental modifications.
 	Always use req.clone() - to modify Headers, params, Body, URL, Method
 
+
 HTTP Interceptors (Middleware Request Pipeline) :-  (Centralizing Requests, Authentication Header, Logging, Retry, Global loading spinner, Token Refresh)
 	Outgoing Request  -->  Interceptor  -->  Modify/Log/Spinner  -->  Server  -->  Incoming Response  -->  Interceptor  -->   Modify  -->  Component
 		It is kind of a Middleware Request Pipeline.
@@ -1197,7 +1198,6 @@ HTTP Interceptors (Middleware Request Pipeline) :-  (Centralizing Requests, Auth
 	Both intercept requests before they reach the destination and responses before they reach the caller.
 	
 	* Interceptors only work with Angular HttpClient. They do not intercept fetch() or XMLHttpRequest used directly. Keep interceptors focused on cross-cutting concerns; avoid business logic.
-
 	Token refresh Flow :- Access Token Expired → API Returns 401 → Interceptor Catches 401 → Call Refresh Token API → Receive New Access Token → Retry Original Request → Return Response
 
 	Functional Interceptors (Angular 16+) :- HttpInterceptorFn  --> export const authInterceptor: HttpInterceptorFn = (req, next) => { return next(req); };
@@ -1227,8 +1227,8 @@ JWT Authentication Flow using Interceptors :-
 	| HttpOnly Secure Cookie   | ✅               | ✅                     | Highest security (recommended by many security teams) |
 
 	JWT Refresh Token Flow :-
-		Token Valid --> API Request --> 401 ? 	│--> Yes  -->  Refresh In Progress   ──── -->  Yes  -->  Wait
-												│										│ -->  No   -->  Refresh Token
+		Token Valid --> API Request --> 401 ? 	──--> Yes  -->  Refresh In Progress   ──── -->  Yes  -->  Wait
+												│										└─--->  No   -->  Refresh Token
 												└────--> No --> Request Complete 
 		
 		Access Token Expired -> Request 1 -> 401 -> AuthInterceptor isRefreshing == false -> Set isRefreshing = true -> POST /refresh-token
@@ -1295,16 +1295,16 @@ Signals :- Signals are a reactive state management feature introduced in Angular
 	
 	Signals reduce unnecessary component checks by allowing Angular to know exactly which views depend on changed state.
 	
-	count = signal(0);   // count is a signal, initial value is 0
+	count = signal(0);   // count is a signal, initial value is 0.
 		Signals are read like a function. "{{ count() }}"
 	count.set(10);
 	count.update(value => value + 1);
 
-	Before Signals - Button Click  ➜  Run Change Detection ➜ Check every binding ➜ Compare values ➜ Update ➜ changed DOM
+	Without Signals - Button Click  ➜  Run Change Detection ➜ Check every binding, Template ➜ Compare values ➜ Update Value ➜ changed DOM
 		Even with OnPush, Angular still needs to evaluate the bindings in the components it decides to check.
 	
 	After Signals - The data itself announces the change. Angular does not have to check all the bindings.
-	Dependency Tracking - Signals perform dependency tracking automatically.
+	Dependency Tracking - Signals perform dependency tracking automatically after a change.
 	
 	Angular  ➜  "I'm calculating doubleCount."  ➜  Current = doubleCount  ➜  count() called  ➜  count says doubleCount uses me  ➜  Remember that.
 		Dependency Graph is created and stored for later purpose.
@@ -1324,8 +1324,8 @@ Signals :- Signals are a reactive state management feature introduced in Angular
 	** Signals don't build the graph once. They build it every time the computation or effect executes. Signals rebuild their dependency graph on every execution based on the Signals that are actually read.
 
 		showSalary = signal(false);                 // As showSalary is false, Dependency Graph is only showSalary ➜ EmployeeInfo   If showSalary is false, while creating DependencyGraph flow wont go inside if() condition.
-		name = signal("Kanishk");					// name ➜ EmployeeInfo  (Same for both showSalary true or false as both condition return name() for EmployeeInfo)
-		salary = signal(100000);					// salary ➜ EmployeeInfo (only if showSalary is true) showSalary is true, execution goes inside if() and Now EmployeeInof is calculated using name && salary. So the Dependency Graph is updated.
+		name = signal("Kanishk");					// name ➜ EmployeeInfo  (This would be Same for both showSalary true or false as both condition returns name() for EmployeeInfo)
+		salary = signal(100000);					// salary ➜ EmployeeInfo (only if showSalary is true) showSalary is true, execution goes inside if() and Now EmployeeInfo is calculated using name && salary. So the Dependency Graph is updated.
 		employeeInfo = computed(() => {
 			if (showSalary()) {
 				return `${name()} - ${salary()}`;
@@ -1339,7 +1339,7 @@ Signals :- Signals are a reactive state management feature introduced in Angular
 		When the component renders for the first time Angular has to execute the template. During that first render Angular automatically registers the dependency.
 			count = signal(10);
 			double = computed(() => count() * 2);
-			HTML - {{ double() }}						// Dependency :- count ➜ double ➜ Template (HTML)   => count changed ➜ double recoumputed ➜ Template notified ➜ re-render
+			HTML - {{ double() }}						// Dependency :- count ➜ double ➜ Template (HTML) => count changed ➜ double recoumputed ➜ Template notified ➜ re-render
 		DependencyGraph :- count  ➜  double  ➜  CounterComponent Template  ➜  DOM
 
 	Signal ➜ Coumpted Signal ➜ Components in Dependency Graph ➜ Template ➜ DOM
@@ -1373,7 +1373,7 @@ Signals :- Signals are a reactive state management feature introduced in Angular
 	| `effect()`   | Perform side effects | ❌ No          | ⚠️ Technically yes, architecturally no |
 
 	** Signals replace a lot of state management, not asynchronous stream processing. It should not be merged with RxJS. It should only be used to update or set the local Application State.
-	If required Convert the Signal to an Observabel. toObservable(search).pipe(....)
+	If required Convert the Signal to an Observable. toObservable(search).pipe(....)
 
 
 Change Detection :- 
@@ -1389,7 +1389,7 @@ Change Detection :-
 			• @Input reference changes, Event originated inside component, async pipe emits, markForCheck(), detectChanges()
 			• Angular still performs Change Detection.
 			• Component tree traversal still happens.
-			• Many components are skipped.
+			• OnPush components are skipped.
 			• Performance improves because unnecessary component checks are avoided.
 	
 	3. Signals 
@@ -1419,18 +1419,8 @@ outDir → Where compiled files should be placed.
 Interceptor.service.ts
 An http-interceptor.service.ts file in an Angular application is typically used to implement an HTTP Interceptor—a piece of code that can inspect, modify, or react to every HTTP request and response made through Angular's HttpClient.
 
-Think of it as middleware that sits between your application and the server.
-Component
-    ↓
-Service
-    ↓
-HttpClient
-    ↓
-HTTP Interceptor
-    ↓
-Backend API
-
-Every request passes through the interceptor before being sent, and every response passes through it before reaching your code.
+Think of it as Middleware that sits between your application and the server.
+	Component  ➜  Service  ➜  HttpClient  ➜  HTTP Interceptor  ➜  Backend API  ➜  Every request passes through the interceptor before being sent, and every response passes through it before reaching your code.
 
 Uses
 1. Add Authentication Tokens, Instead of manually adding headers everywhere
@@ -1442,7 +1432,6 @@ Uses
 
 Real-world Gotchas (Things tutorials rarely tell)
 
-
 switchMap() :- 
 	Gotcha 1 - Using switchMap for a Save button can silently cancel earlier save requests if the user clicks multiple times.
 				If every save must reach the server, mergeMap or concatMap may be more appropriate depending on the business requirement.
@@ -1451,7 +1440,7 @@ switchMap() :-
 
 OnPush :- 
 	Mutating an object doesn't change its reference, so an OnPush child may not update.
-		user = { ...user, name: "John" };
+		user = { ...user, name: "John" };   -- Always use Immutable updates using a spread operator to update the reference.
 
 trackBy :-
 	Gotcha - Using trackBy with the array index works until the list is sorted or items are inserted. Then Angular reuses the wrong DOM elements, causing subtle UI bugs.
@@ -1460,13 +1449,14 @@ BehaviorSubject :-
 	Gotcha - Calling .next() from many unrelated components makes it difficult to trace where state changes originate. As an application grows, centralizing state updates becomes easier to maintain.
 
 Interceptors :-
-	Gotcha - Forgetting to clone a request before modifying it causes runtime errors because HttpRequest objects are immutable.
+	Gotcha - Forgetting to clone a request before modifying it causes runtime errors because HttpRequest objects are immutable. Clone Request make the Update and send the updated cloned request further.  //return next(clonedReq);
+				HttpRequest objects are immutable. To modify a request in an interceptor, use req.clone() and pass the cloned request to next(). Direct mutation isn't the correct way to modify the request.
 
 Routing : -
-	Gotcha - Navigating between /users/1 and /users/2 often reuses the same component instance. Relying only on snapshot means the UI won't react to parameter changes.
+	Gotcha - Navigating between /users/1 and /users/2 often reuses the same component instance. Relying only on snapshot means the UI won't react to parameter changes. Use Observable (ParamMap).   // this.route.paramMap.subscribe(params => { console.log() })
 
 Async Pipe :-
-	Gotcha - Don't combine the async pipe with manual subscriptions to the same observable unless there's a clear reason—you can end up with duplicate work or confusing state.
+	Gotcha - Don't combine the async pipe with manual subscriptions to the same observable unless there's a clear reason — you can end up with duplicate work or confusing state.
 
 DI :-
 	Gotcha - Providing a service in a component instead of at the application level creates a new instance. Developers sometimes think they're sharing state but accidentally create isolated instances.
@@ -1484,52 +1474,98 @@ HTTP :-
 What Would Make Me Think "This Person Has 3–5 Years"
 
 
+What are the 2 Compilation Techniques in Angular?
+	Angular mainly supports two compilation approaches: JIT (Just-in-Time) compilation, and AOT (Ahead-of-Time) compilation. 
+	The main difference is when the Angular templates and components are compiled.
+		
+		JIT :- The application is compiled in the browser at runtime.      Angular application → Browser loads source/templates → Angular compiler → Executable application	
+			Pros - Faster development/build cycle. Changes can be compiled quickly.
+			Cons - More work is done in the browser. Larger startup overhead. Template compilation errors may be discovered at runtime.
 
-1. What is the difference between Template-Driven Forms and Reactive Forms?
-2. How does Change Detection work in Angular?
-3. What is the purpose of RxJS Observables?
-4. Difference between Subject, BehaviorSubject, and ReplaySubject.
-5. How do you handle an API that takes 10 seconds to respond without freezing the UI?
-6. How would you display 1,000 records in Angular without pagination?
-7. What is Lazy Loading and why is it used?
-8. Difference between ngOnInit() and Constructor.
-9. How do you implement route guards?
-10. What are Angular Interceptors and where have you used them?
+		AOT :- The templates and components are compiled during the build process, before application is sent to browser.   Angular application → Build process → Angular compiler → Compiled JavaScript → Browser
+			Pros - Faster application startup. Better runtime performance. Template errors can be detected during the build.
+	
+	**Modern Angular applications use AOT by default for production builds, and the Angular CLI also uses AOT in its standard build workflows. 
+
+What is the difference between Template-Driven Forms and Reactive Forms?'
+	Template Driven Forms 	:- Defined in HTML template, FormsModule, Relatively Hard, Less Convenient, Simple forms.
+	Reactive Forms 			:- Defined in TypeScript, ReactiveFormsModule, Easy, Very Convenient, Good for Complex forms.
+
+	Template: <form #loginForm="ngForm" (ngSubmit)="onSubmit(loginForm)"> <input name="email" ngModel required email />
+	Reactive: loginForm = new FormGroup({ email: new FormControl('', [ Validators.required, Validators.email ]) });        <form [formGroup]="loginForm" (ngSubmit)="onSubmit()"> <input formControlName="email">
+
+	*For a simple form with basic validation, I would use Template-Driven Forms because they require less code. For complex forms, dynamic fields, cross-field validation, or when I need more control and testability, I would use Reactive Forms.
+
+How does Change Detection work in Angular?
+	Change Detection is the mechanism Angular uses to detect changes in component data and update the DOM accordingly.
+	When something happens like user event, HTTP response, timer, or input change, 
+		Angular runs change detection and checks the component tree to determine whether the values displayed in the template have changed. If they have, Angular updates the DOM.
+
+What is the purpose of RxJS Observables?
+	Angular is a single threaded application.
+	RxJS Observables are used to handle asynchronous and event-based operations in Angular. They are a stream of values that can arrive over time, such as HTTP responses, user input, WebSocket messages, or route changes.
+		We have to subscribe to an Observable to receive its values.
+
+How do you handle an API that takes 10 seconds to respond without freezing the UI?
+	In Angular, HTTP requests are asynchronous, so a slow API call does not block the UI thread by itself. 
+		I would make the API call using HttpClient, show a loading state while waiting, handle success and errors, and optionally add a timeout, retry logic, cancellation, or caching depending on the use case
+		If API takes too long which is very possible in real applications, we can add a Timeout and error message.
+	
+	A 10-second API response does not normally freeze the UI. A blocking synchronous operation, such as a large loop or expensive computation running on the main thread, can freeze the UI.
+
+How would you display 1,000 records in Angular without pagination?
+	I would avoid rendering all 1,000 DOM elements at once if performance is a concern. Lazy Loading or Virtual Scrolling
+		I would use Angular CDK Virtual Scrolling, which renders only the items currently visible in the viewport and reuses DOM elements as the user scrolls.
+
+Difference between ngOnInit() and Constructor.
+	Constructor is a TypeScript/JavaScript class feature used mainly for dependency injection and basic initialization when the class is instantiated.
+
+	ngOnInit() is an Angular lifecycle hook that runs after Angular has initialized the component's input properties. It is typically used for component initialization, such as loading data from an API or setting up component state.
+
+Angular vs React?
+	Angular - Full Featured Framework (Opinionated, HTTPClient) && React - UI Library (Flexible, fetch or Axios)
+
+	Angular is a full-fledged TypeScript-based framework, while React is a JavaScript library focused primarily on building user interfaces.
+		Angular provides many features out of the box, such as routing, forms, HTTP client, dependency injection, and a structured architecture.
+	React, many of these capabilities are typically provided through additional libraries and architectural choices.
+	React gives developers more flexibility in choosing how to structure an application.
+
+What is a component?
+	A component is a building block of an Angular Application. It consists of HTML Template, CSS Styles, Typescript class and Metadata @Component.
+What is a module?
+	A module is a container that groups related components, directives, pipes, and services together. NgModule 
+What are standalone components?
+	Standalone components are Angular components that can work independently without being declared inside an NgModule.
+		They can directly import the components, directives, and pipes they need using the imports property of the @Component decorator.
+What are pipes?
+	Pipes in Angular are used to transform data in the template before displaying it to the user. 
+		They take a value as input and return a formatted or transformed value without changing the original data.
+		Most common example is displaying date and time in locale format from UTC.
 
 
-🔹 ANGULAR CORE
+What is component lifecycle?
+	The Angular component lifecycle is the sequence of stages a component goes through from creation to destruction. 
+		Angular provides lifecycle hooks that allow us to execute code at specific stages of a component’s life
+	ngOnChanges -> ngOnInit -> ngDocheck() -> ngAfterContentInit -> ngAfterContentChecked -> ngAfterviewInit -> ngAfterViewChecked -> ngOnDestroy
 
-1. What is Angular?
-2. Angular vs React?
-3. What is a component?
-4. What is a module?
-5. What are standalone components?
-6. What are directives?
-7. Structural vs attribute directives?
-8. What are pipes?
-9. Pure vs impure pipes?
-10. What is dependency injection?
+ngOnChanges() vs ngDoCheck()?
+	ngOnChanges() – Called when an @Input() value changes.
+	ngDoCheck() – Called during Angular's change-detection process; used for custom change detection.
+	
+What is ViewChild?
+	ViewChild is an Angular decorator used to get a reference to a child component, directive, or DOM element from the component's view. 
+		It allows the parent component to access the child and interact with it programmatically.
+ContentChild vs ViewChild?
+	ViewChild accesses something inside the component's own template, whereas ContentChild accesses something projected into the component through ng-content.
 
-🔹 COMPONENTS & DATA FLOW
+What is content projection?
 
-11. What is component lifecycle?
-12. Explain ngOnInit().
-13. ngOnChanges() vs ngDoCheck()?
-14. What is ViewChild?
-15. ContentChild vs ViewChild?
-16. What is content projection?
-17. What is @Input()?
-18. What is @Output()?
-19. How does event binding work?
-20. What is two-way binding?
-
-🔹 SERVICES & DI
-
-21. What is an Angular service?
-22. How does hierarchical DI work?
-23. providedIn: 'root' — what does it mean?
-24. Singleton service vs multiple instances?
-25. How do you share data between components?
+Singleton service vs multiple instances?
+	A singleton service means Angular creates only one instance of the service within a particular injector scope, so the same instance can be shared by multiple consumers. 
+	Multiple instances occur when the service is provided in different injector scopes, such as a component's providers array.
+How do you share data between components?
+	In Angular, the approach for sharing data between components depends on their relationship. 
+	For parent-child communication, we commonly use @Input() and @Output(). For unrelated components, we can use a shared service with RxJS or Signals.
 
 🔹 RXJS & OBSERVABLES
 

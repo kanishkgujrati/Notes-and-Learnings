@@ -1,0 +1,433 @@
+C# Interview Questions
+
+
+	A class is a blueprint/type definition.
+		An object is an instance of a class.
+		
+		Person p = new Person();	// p is the reference of Person Object (p is not the obj itself, it is a reference to the Obj).
+	
+		Car a = new Car();   a.Brand = "Toyota";
+		Car b = a;           b.Brand = "BMW";
+		Console.WriteLine(a.Brand);		// Ouput is BMW			A variable such as 'a' holds a reference to the object.		Car b = a; reference is copied by value, It does not create a new Car Obj.
+		
+		
+		Person p1 = new Person();		p1.Name = "Alice";			// new Person() creates a new Object and assigns the reference to the var
+		Person p2 = p1;					p2.Name = "Bob";			// No new Object is created, same reference of p1 is copied by value and stored in p2
+		Person p3 = new Person();		p3.Name = "Charlie";
+		p2 = p3;
+		Console.WriteLine(p1.Name);		// Bob
+		Console.WriteLine(p2.Name);		// Charlie
+		
+	*Fields belong to objects, not references.   Name does not belong to p1, it belongs to the Object.
+	
+	Fields: public string Name;
+	Properties: public string Name { get; set; }		// They have getters and setters
+	
+		public int Age { get { return age; }   set { age = value; } }		// value is a special contextual keyword inside a set accessor. represents value caller is assigning to prop.
+									// age is required to actually store the actual data somewhere
+			public int Age { get; set; }
+
+	Instead of declaring fields in classes, we commonly use properties. so that we can control the read and write.
+
+	A constructor initializes an object.
+
+	A Static member belongs to the type itself and not the instance of the type.
+
+	Upcasting: 		safe and implicit 								Dog dog = new Dog(); => Animal animal = dog;
+	Downcasting: 	Can Fail (InvalidCastException)					Dog dog = (Dog)animal;				(It fails if animal is Cat)
+
+	An abstract method has no implementation. Derived class must implement it.		We can not do Animal a = new Animal();,  Only derived classes can create instances (Instantiate).
+
+	Interfaces : class UpiPayment : IPayment		Same interfaces can have different behav.	
+	
+	C# does not allow multiple class inheritance  -  class C : A, B	(Not allowed if A and B are classes)	
+	Multiple Interfaces are allowed  -  class C : IA, IB
+
+	Composition :	Car inherits Engine		-	Car HAS-A Engine
+
+	Sealed classes prevent Inheritance.		sealed class SecurityService	class MyService : SecurityService is not allowed.
+
+
+What is the difference between value types and reference types in C#? Explain what happens when you assign one variable to another, and give examples.
+	Value type means the variable contains the value itself, whereas a reference-type variable contains a reference to an object stored elsewhere in memory.
+		Value Types: int, double, bool, char, struct, and enum.
+		Reference Types: String, Class, Array, Delegates
+	
+	When you assign one value-type variable to another, the value is copied. The two variables are independent afterward.
+	When you assign one reference-type variable to another, the reference is copied, not the object itself. Both variables can therefore refer to the same object.
+	
+	*Reference type ≠ pass-by-reference   **A reference type is passed by value by default. The value being copied is the reference.
+		
+		case 1: Normal Parameter -  void Change(Person p){ p.Name = "David" }    // Object can be modified because the copied reference still points to the same object.
+		Case 2: Normal parameter + reassignment -   void Change(Person p) { p = new Person { Name = "David" }; }    // Caller variable doesn't change because only the local copy of the reference was reassigned.
+		Case 3: ref parameter -   void Change(ref Person p){ p = new Person { Name = "David" }; }     // Caller variable changes because we're passing the variable itself by reference.
+
+	**Reference-type variables contain references to objects, and assigning one reference variable to another copies the reference, not the object.
+
+Class vs Struct
+	Structs are Value types in C#.  	Value is stored directly or inline.										Can not be Null.	Cannot inherit from another struct/class. Can implement Multiple Interfaces.
+	Classes are Reference types in C#.  Object is typically allocated on the heap; variable holds a reference.  Can be Null			Can inherit from another Class.			Can implement Multiple Interfaces..
+
+	Structs are used over Classes for  small, value-like data where copying the value makes semantic sense
+
+Boxing and Unboxing
+	int number = 10;			// int is a value type, while object is a reference type.
+	object obj = number;		// Boxing
+		-- **The runtime creates an object on the managed heap that contains the integer value 10, and obj holds a reference to that boxed object.
+	
+	int result = (int)obj; 		// Unboxing
+	
+	Boxing is the conversion of a value type to object, where the value is wrapped in an object on the managed heap.
+	
+	long res = (long)obj;		// number was an integer (Int32) type it can not be unboxed to long(Int64). It throws an exception due to type mis-match.  InvalidCastException
+	*When Unboxing, the target type must match the actual boxed type.
+	
+	Boxing might affect Performance because:
+		- Allocating an object on the managed heap.
+		- Copying the value into that object.
+
+Generics and Boxing
+	Generics allow us to define type-safe classes, methods, interfaces, and collections without specifying the exact type until they are used.
+		- They allow the same code to work with different data types.
+		- Generics can often help avoid boxing when working with value types.
+			generic collections such as List<int> are one of the ways to avoid boxing.
+	
+	Type safety, Code reusability, Reduced Casting, Better Performance by avoiding Boxing/Unboxing.
+	
+	examples of Generics: List<int>, GetValue<T>(T value)
+
+Types of Collections
+	Collections are used to store and manage groups of objects or values.
+		Non-Generic Collections: ArrayList, HashTables, Queues, Stack.
+			- Casting is required when trying to access Values, with explicitly providing type	-- int number = (int)numbers[0];
+			- They generally store elements as object.
+
+		Generic Collections: Dictionary<TKey, TValue>, List<T>, Hashset<T>, Queues<T>, Stack<T>		
+			- No Casting is required.		-- int number = numbers[0];
+			- Strongly Typed (variable whose data type is strictly defined)
+
+
+Abstract class and Interface
+	- Abstract is like a blueprint class which is intended to be inherited from.		Abstract can have Constructors, fields, properties, methods.	
+		Abstract classes have Declarations (Abstract members)and Implementations (Concrete members) of methods and properties.
+		Abstract classes can not have Multiple Inheritance. Only one base Class.
+
+	Interface is like a contract, which needs to be implemented when implementing the interface.	Interfaces can not have Constructors.
+		Interfaces can have Multiple Inheritance.
+		Interfaces earlier could only have Declarations, but with recent .Net versions it allows us to have implementations in Interfaces as well.
+	
+	* With C# 8 version, Interfaces can also have Implementations along with Declarations. It was done for the legacy projects to be relevant with the newer .Net versions. 
+		But in new Projects interfaces should only be used for declarations.
+
+
+What is the difference between var, dynamic, and object in C#?
+	Var is COMPILE-TIME type inference. *The compiler determines the actual type from the value assigned to the variable.
+		var does not mean the variable can change its type. *A var variable must be initialized when declared.
+			var number = 10;
+
+	Dynamic defers member/type checking to RUNTIME. same variable can hold different types at different points in execution.
+		dynamic value = 10;
+		value = "Hello";
+
+	Object is the base type of all C# types. Can assign different types to an object variable
+
+
+Const vs Readonly
+	const = compile-time constant. Once declared, it cannot be changed.
+		A const field is implicitly static, so you don't need to write static.
+		const int X = 2;
+	
+	readonly = value can be assigned only during initialization/construction.
+		A readonly field can be assigned: At its declaration, or Inside an instance constructor. **After the constructor has finished, you cannot assign a new value to the field.
+			public readonly string Name;
+
+
+Static :-
+	A static member belongs to the type itself, rather than to a particular instance of that type.
+		A static field has single value shared across all instances of the class.
+	
+	*Instance members belong to an object, whereas static members belong to the type itself and are shared at the type level.
+		class Employee {
+			public static int EmployeeCount;	// All the Employee Objects will have the same EmployeeCount instance. There is only one instance of this accross all the Emp Objects.
+			public string Name;					// Each Employee Object will have its own Name.
+		}
+			It can be accessed using type Employee.EmployeeCount++;  No need of an instance.
+	
+	A static class cannot be instantiated and can contain only static members.
+	
+	A static method cannot directly access instance members, because it doesn't have an instance (this) to work with. Static method can access Static members.
+
+
+Access  Modifiers :- (Encapsulation)
+	Access modifiers determine where a type or its members can be accessed from.
+		Public - Accessible from anywhere that can access the containing type,
+		Private - Accessible only within the containing type,
+		Protected - Accessible within: The containing class, Classes derived from the containing (Child) class,
+		Internal - Accessible anywhere within the same assembly,   (This is especially relevant when working with multiple projects in a .NET solution.)
+		Protected Internal - Accessible from anywhere in the same assembly, OR from a derived class in another assembly, 		Same assembly OR derived class
+		Private Protected - Accessible only within the containing class or derived classes that are in the same assembly.		Same assembly AND derived class
+
+
+Nullable Value Types :-
+	Normally, value types cannot contain null, but C# provides nullable value types using '?'.
+		int age = null;		-- Compile-time error
+		int? age = null;	-- represents either a valid value or NULL.
+
+Nullable Reference Types :-
+	Reference types have historically been able to contain null.  Nullable Reference Types (NRTs) enabled, C# allows you to express whether a reference is expected to be null.
+		string? Name = null;
+
+	** Nullable reference types were introduced in C# 8.
+	
+Null Operators :-
+	int value = age ?? 18;		-- use the right side if the left side is NULL.
+	int? length = name?.Length;	-- Access a member only if the object isn't null.	If Name is not null the Name.Length is assigned to length var.
+
+
+ref, out, in Parameters :-
+	ref → read + write
+			By default, C# passes arguments by value.  'ref' allows methods to receive a reference to the caller's variable. So the method can modify variable.
+				ref is required both in the method declaration and at the call site.
+				Caller must initialize the variable before sending.
+
+	out → write/return
+		out is also pass-by-reference, but it is intended for output. No need to initialize the variable first.	
+*out is basically the same as ref, except initialization.
+
+	in → read-only
+		in passes an argument by reference but prevents the method from modifying the parameter through that reference.
+
+Implicit conversion
+	An implicit conversion happens automatically when the conversion is known to be safe.
+		int number = 100;
+		long value = number;
+
+Explicit conversion / casting
+	When a conversion may lose information or isn't guaranteed to be safe.
+		int number = (int)value;
+
+'is' - 	The is operator checks whether an object is compatible with a particular type.	-  if (animal is Dog)
+'as' -  The as operator attempts a reference, nullable, or boxing/unboxing-compatible conversion and returns null if the conversion isn't possible	-	Dog dog = animal as Dog;
+
+
+
+OOP - Object Oriented Programming
+	Encapsulation, Polymorphism, Abstraction, Inheritance
+	
+	➜ Encapsulation — bundling data and behavior together and controlling access to the internal state.  Access Modifiers are used.	
+			creating private fields.	
+		**An object should control its own state and expose a controlled public interface.
+		
+		How do I protect/control the internal state?
+
+	➜ Abstraction — exposing only the necessary details while hiding implementation details.
+		What should the outside world need to know?  Hide Complexity
+
+	➜ Inheritance — allowing a derived class to reuse and extend the behavior of a base class. (Child - Parent)
+			Is-a relationship   (Dog is an Animal)
+		
+		Animal (parent/base)			Dog : Animal - Dog (child/derived) inherits from Animal and gets inherited behav.
+
+	➜ Polymorphism — allowing the same interface or method call to behave differently depending on the object.
+		One interface/reference, multiple behaviors.
+
+What is polymorphism in C#? What are the different types of polymorphism?
+	Polymorphism - one interface/reference, multiple behaviors.
+		
+		Compile-time:	Method Overloading  -  Multiple methods have the same name but different parameter lists.  Compiler determines which method to call based on arguments.
+		Run-time:		Method Overriding   -  A base class defines a virtual method and a derived class overrides it.
+			
+			parent:- public virtual void Speak(){}		derived class:- public override void Speak() {}
+				parent class will have virtual method and derived/child classes can override the method.  Runtime chooses the appropriate overridden method.
+
+What is the difference between virtual, override, and new?
+	Virtual - A derived class is allowed to provide its own implementation.				- public virtual void Speak(){}			➜ Allows overriding
+	Override - Replaces	the inherited virtual/abstract implementation.					- public override void Speak(){}		➜ Overrides inherited virtual/abstract member
+	New - Hide the inherited member.			(confusing)								- public new void Speak(){}				➜ Hides inherited member
+
+
+
+SOLID - 
+	S: Single Responsibility Principle		➜	A class should have one primary responsibility.
+	O: Open Close Principle					➜	Open for extension, closed for modification.		- Instead of lot of if else cases, use Abstraction: interface IPayment 	UpiPayment : IPayment
+	L: Liskov Substitution Principle		➜	If Dog is an Animal, then code expecting an Animal should generally be able to work with a Dog without breaking its assumptions.
+	I: Interface Segregation Principle		➜	Dont force classes to implement menthods which they dont need.		Prefer smaller, focused interfaces.
+	D: Dependency Inversion Principle		➜	High-level classes should depend on abstractions, not concrete implementations.
+
+Garbage Collection and Generations
+	Garbage Collection (GC) is the automatic memory-management mechanism provided by the .NET runtime.
+	It is run under CLR. The GC is responsible for reclaiming memory occupied by managed objects that are no longer reachable by the application.
+	
+	GC Workflow:
+		Identifies objects that are still reachable from GC roots.
+		Determines which objects are no longer reachable.
+	
+	Generations are a performance optimization based on object lifetime.
+		Generation 0, 1 and 2.
+			Generation 0 - contains newly allocated, short-lived objects. which ever Objects survive Generation 0 are promoted to Gen 1.
+			Gen 1 is a buffer zone for Short-lived and Long-lived Objects. Objects which survive Gen 1 will be promoted to Gen 2.
+	
+	GC and Dispose() are different concepts.
+	GC automatically reclaims the memory.
+	Dispose() is normally used to release resources that require deterministic cleanup. File handles, DB conn, Network issues.
+
+
+
+
+
+Sealed classes/methods
+
+Constructor chaining
+
+Base constructor calls
+
+Abstract vs virtual methods
+
+2. Methods and parameters
+Pass-by-value vs pass-by-reference
+
+ref vs out vs in — deeper scenarios
+
+params
+
+Optional parameters
+
+Named arguments
+
+Expression-bodied methods
+
+Local functions
+
+3. Properties and object initialization
+Fields vs properties
+
+Auto-properties
+
+get / set
+
+init
+
+private set
+
+Computed properties
+
+Object initializers
+
+Constructor vs object initializer
+
+4. Strings and memory
+string immutability
+
+StringBuilder
+
+String interning
+
+== vs .Equals()
+
+ReferenceEquals()
+
+StringComparison
+
+5. Exceptions
+try/catch/finally
+
+Exception hierarchy
+
+throw vs throw ex
+
+Custom exceptions
+
+When finally executes
+
+Exception filters
+
+6. Delegates, Lambda and Events
+This is a very important interview area:
+
+Delegate
+
+Multicast delegate
+
+Action
+
+Func
+
+Predicate
+
+Lambda expressions
+
+Events
+
+Delegate vs event
+
+7. LINQ
+Another major interview area:
+
+Where
+
+Select
+
+SelectMany
+
+First / FirstOrDefault
+
+Single / SingleOrDefault
+
+Any / All
+
+OrderBy
+
+GroupBy
+
+Join
+
+Deferred execution
+
+IEnumerable vs IQueryable
+
+8. IEnumerable, ICollection, IList, IQueryable
+Especially important for experienced .NET interviews.
+
+9. Async / Await
+Task
+
+async / await
+
+Task vs Thread
+
+Task.Run
+
+SynchronizationContext
+
+Deadlocks
+
+ConfigureAwait
+
+Task.WhenAll
+
+Task.WhenAny
+
+10. Advanced C#
+Later we can move into:
+
+Delegates/events in depth
+
+Generics constraints
+
+Covariance / contravariance
+
+Pattern matching
+
+Records
+
+record vs class vs struct
+
+Span<T> / Memory<T>
+
+IDisposable / IAsyncDisposable
+
+lock, Monitor, SemaphoreSlim
+
+Thread safety
+
+Concurrent collections
