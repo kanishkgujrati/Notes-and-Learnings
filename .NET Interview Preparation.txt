@@ -1,7 +1,7 @@
 .NET Interview Preparation
 .NET Core Interview Series - The DotNet Way
 
-I have over 2 years of experience working with .NET Technologies, including .Net Framework and .Net Core.
+I have over 2+ years of experience working with .NET Technologies, including .Net Framework and .Net Core.
 In the last couple of years I have mainly focused on building Scalable Web APIs and Microservices using .NetCore.
 I have been improving myself to write Clean Maintainable code and exploring cloud technologies like Azure.
 I have been working on a Project to build an Application with .Net Core and Angular which gave me Deep Hands-On experience with the Technology, Design and Deployment.
@@ -35,8 +35,8 @@ Kestrel is a "Cross-platform Web Server" used by ASP.Net Core Applications.
 Fast, Light-weight, and can run behind reverse Proxies like IIS or Nginx or directly handle HTPP Traffic.
 (IIS is a WebServer / Host, but only for windows applications - It is primarily used to host applications built on the Microsoft stack, such as ASP.NET)
 
-As a Web Server / Host :- They can receive HTTP/HTTPS requests from users and serve content.  IIS and NGINX are the server that hosts and serve requests.
-			  They also act like a Reverse Proxy as well. A reverse proxy sits in front of your application and forwards requests to the actual application server.
+As a Web Server / Host :- They can receive HTTP/HTTPS requests from users and serve content. IIS and NGINX are the server that hosts and serve requests.
+			  They also act like a Reverse Proxy as wall. A reverse proxy sits in front of your application and forwards requests to the actual application server.
 
 Browser           Internal network
    |                     |
