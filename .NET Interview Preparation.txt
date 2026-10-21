@@ -36,7 +36,7 @@ Fast, Light-weight, and can run behind reverse Proxies like IIS or Nginx or dire
 (IIS is a WebServer / Host, but only for windows applications - It is primarily used to host applications built on the Microsoft stack, such as ASP.NET)
 
 As a Web Server / Host :- They can receive HTTP/HTTPS requests from users and serve content. IIS and NGINX are the server that hosts and serve requests.
-			  They also act like a Reverse Proxy as wall. A reverse proxy sits in front of your application and forwards requests to the actual application server.
+			  They also act like a Reverse Proxy as well. A reverse proxy sits in front of your application and forwards requests to the actual application server.
 
 Browser           Internal network
    |                     |
@@ -121,7 +121,7 @@ Middleware :- It is a component in ASP .Net Core, HTTP Request and Response pipe
 	app.UseCorsPolicy(), app.UseAuthentication(), app.UseLogging(), app.UseHttpRedirection(), app.UseRouting();
 
 Request Delegates - Actual Fn that Handles/Controls the flow of each Http Request from one middleware to another.     public delegate Task RequestDelegate(HttpContext context);
-	Request Delegate is a function that takes an HttpContext object (which holds the Http Request and Response and returns a Task. 
+	Request Delegate is a function that takes an HttpContext object (which holds the Http Request and Response) and returns a Task.
 When an HTTP request hits your server, .NET wraps the raw request into an HttpContext and passes it to the first Request Delegate.
 
 -> Use() - The Inline/Chaining Delegate - After executing itself, It will execute the next Middleware in the pipeline. eg - app.UseAuthentication, app.UseCorsPolicy
@@ -184,7 +184,7 @@ But still splitting the logic is a better and clean approach (Maintainable for L
 StartUp.cs :- Configures Services and Apps Http request Pipeline (Sequence of Middlewares)
 	It contains 2 main methods :-
 	-> ConfigureServices() - To maintain Dependency Injection Setup (Services, Repositories and Controllers)
-	-> Confgure() - To maintain sequence of Middlewares registeration. - Apps Request Handling Pipeline.
+	-> Configure() - To maintain sequence of Middlewares registeration. - Apps Request Handling Pipeline.
 	Configure method specifies how the application responds to each of the HTTP request and response.
 
 Keep service registerations organized using extension methods (ServiceCollectionExtension)
@@ -208,9 +208,10 @@ eg :-	private readonly IMyService _myService;
 
 Now MyService instance is always automatically available whenever the controller is created.
 
-DIP - Dependecy Inversion principle
+DIP - Dependency Inversion principle    High-level modules should not depend on low-level modules. Both should depend on abstractions.
+		** Instead of depending directly on a concrete class, depend on an interface or abstraction.
 
-If there are multiple Implemenatations for 1 Interface, We can use NameServices, keybased factories or IID Injection
+If there are multiple Implementations for 1 Interface, We can use NameServices, keybased factories or IID Injection
 
 *Static Helper Classes can not be injected as they dont have an instance, its better to avoid static classes in DI based.
 	rather than Static Classes create injectable Services with Singleton Lifetime if required globally (Logger).
@@ -359,7 +360,7 @@ Traces - Open Telemetry
 It tells and calculates where the time was spent. Distributed Traces give you a visual waterfall chart of a request.
 It shows you exactly how many ms were spent in API, DB and Service Layer.
 
-Top 3 Pillars for Observability :- 
+Top 3 Pillars for Observability :-
 1. Logs : What happened (Events/Errors)
 2. Metrics : How much CPU Usage, Memory consumed.
 3. Traces :  Where Time was spent (Waterfall Chart)
@@ -380,9 +381,17 @@ Automatically delete logs in some specific period. (15 days)
 
 
 Clean Architecture
-	It is a software design approach that separated concerns by organizing code into layers.
-	Typically Domain, Application, DataAccess, Infrastructure.
+	It is a software design approach that organizes code around business rules and ensures that business logic does not depend on external technologies, as databases or frameworks.
+		- Entities (Enterprise Business rule): User, Order, payment
+		- Use Cases: Application Business rule, What the application does.
+		- Interface Adapters (DTOs): Convert data between Outside world and application's internal layers.
+		- Frameworks and Drivers (external tech used by app SQL Server, Angular, .Net)
 	It promotes Testability, Flexibility and Maintainability by decoupling business logic from infrastructure and frameworks.
+
+Layered Architecture 
+	It organizes code into layers based on technical responsibilities.
+	Each layer has a specific responsibility and typically communicates with the layer next to it.
+		Presentation (Controllers), Business Logic (Services), Data Access (Repository), Database Layer (SQL Server) (Table Scripts, Stored Procedures)
 
 Domain Layer - It contains core business models and the interfaces.  (Data Access and Repository)
 Application Layer - Use cases are defined, DTOs and Services which have the actual business logic. (Application and Business)
@@ -391,19 +400,21 @@ Presentation Layer - It is the WebAPI or the User Interface which interacts with
 App.Application, App.Domain, App.Infrastructure, App.WebAPI.
 
 Dependency Inversion principle - eg - Domain Layer has the Interface IProductRepository and the Infrastructure Layer implements them.
+		Higher level modules should not depend on lower level modules.  -- Instead of depending directly on a concrete class, depend on an interface or abstraction.
 
-Domain Driven Design - Modeling Business rules and behaviours in the domain layer. 
+Domain Driven Design - Modeling Business rules and behaviours in the domain layer.
 	When we start with the business/domain, rather than starting with databases, controllers, APIs, or frameworks.
 	Build the software around the business rules and concepts that matter to the business.
 	Clean Architecture provides structure to implement DDD effectively.
 
 CQRS :- Command Query Responsibility Segregation
 Application layer - It has the Folders of Commands, Queries and Handlers.
-	Commands - modify state, 
-	Queries - fetches the relevant data
+	Commands - modify state,  (WRITE)
+	Queries - fetches the relevant data  (READ)
 Using MediatR, We can keep Handlers separate and single responsibility.
 
 REST API - Restful APIs - Representational STATE Transfer Application Programming Interface
+		CSSUCL
 	1. Client and Server should always be Independant & Separated (Angular & .NET)
 	2. Stateless - Server should not store anything about the HTTP Request. No STATE Management.
 	3. Uniform Interface - URL should be clear and simple (eg - api/ConsolidatedOverview/OrderListSearch)
@@ -423,7 +434,7 @@ with Data Annotations, we can define a custom message as well.
 [Required(ErrorMessage = "Name is mandatory.")]
 For complex Validation use Fluent Validation
 Fluent Validation is used when the validation is complex custom. Its a separate library where we define validator classes and register them in dependecy injection.
-[APIController] - handles Model State validation 
+[APIController] - handles Model State validation
 [HttpGet], [Route] - Handles Http requests and routing.
 
 JWT = Token
@@ -434,11 +445,10 @@ Authentication - Who are you ? (Username & Password)
 Authorization - What are you allowed to do? (Permissions or Roles)
 
 JWT Token Authentication and Role Based Authorization
-It is a compact self-contained way of transmitting user identity between client and server.
-In ASP.Net core we use JWT as it is stateless authentication.
+	It is a compact self-contained way of transmitting user identity between client and server.
+	In ASP.Net core we use JWT as it is stateless authentication.
 
-Token generation typically occurs in a login or authentication method, 
-when a user's credential are verified 
+Token generation typically occurs in a login or authentication method, when a user's credential are verified 
 Start by using the JWTSecurityTokenHandler
 [Authorize(Roles = "Admin")]
 
@@ -447,7 +457,7 @@ It is sent with every API Request via Authentication Header: Bearer Token
 Tokens are short-lived.
 There is a Refresh Token strategy, when token expires user requests for a new access token (Refresh endpoint)
 
-Access Tokens are short lived (15mins). So that if someone steals the tokens, he does not have access for very long.
+Access Tokens are short lived (15 mins). So that if someone steals the tokens, he does not have access for very long.
 But the users access also gets removed after 15 mins. They should not login again and use.
 Refresh Token provides new Access Token. When the User does the Authentication then it returns Access Token + Refresh Token.
 
@@ -461,6 +471,7 @@ For Authorization, we can use Roles and Policies with [Authorize] attr on contro
 	
 Traditionally Browser sent Username/Password to Server, Server created Sessions, Stores Session in DB. Browser stores Cookie: (SessionId). Every request will have this Cookie: (SessionId).
 If there are multiple servers, Which server has the Session. No Idea. It becomes very complex.
+
 	Browser -(Username/Password)-> Server, Server creates Session (SessionId: abc123), Stores abc123 -> User in DB. Browser stores Cookie:abc123 and sends this with every req. Then Server looks up for the Session.
 
 JWT solves this issue.
