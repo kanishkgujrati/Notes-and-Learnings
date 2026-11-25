@@ -20,12 +20,11 @@ Judge it by real-world hiring standards, not by being encouraging.
 .NET, .NET Core, C#, TypeScript, Angular, Entity Framework Core, Entity Framework, LINQ, SQL Server, ASP.NET Core, SSIS, SSIS ETL
 
 
-Hi Sridevi,
-I hope you are doing well.
+Hi Sridevi, Hope you are doing well.
 
 I am writing to inquire about current job opportunities at LogiAngle for a Fullstack Developer position (.Net + Angular + SQL Server).
 
-I have attached my resume for your reference. I would appreciate it if you could review my profile and consider me for the suitable opportunity that match my skills and experience.
+I have attached my resume for reference. I would really appreciate, if you could review my profile and consider for any suitable opportunity that matches my skills and experience.
 
 SKILLS: C#, .Net core, ASP .Net Core, ASP .Net Web API, OOPS, LINQ and Entity Framework. Angular and Typescript.
 

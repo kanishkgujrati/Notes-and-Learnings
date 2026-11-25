@@ -446,7 +446,7 @@ Authorization - What are you allowed to do? (Permissions or Roles)
 
 JWT Token Authentication and Role Based Authorization
 	It is a compact self-contained way of transmitting user identity between client and server.
-	In ASP.Net core we use JWT as it is stateless authentication.
+	In ASP.Net core we use JWT as it is Stateless Authentication. Each Token has the User details which is verified with each request.
 
 Token generation typically occurs in a login or authentication method, when a user's credential are verified 
 Start by using the JWTSecurityTokenHandler
@@ -466,7 +466,7 @@ JWT itself is neither authentication nor authorization. It is a token format tha
 JWT (JSON Web Token) Token based Authentication via UseAddAuthentication(), UseAuthorization().
 For Authorization, we can use Roles and Policies with [Authorize] attr on controllers and Services.   // [Authorize(Permissions.Admin)]
 
-	JWT is STATELESS. JWT is slef-contained so there is no need of Session Storage on Server.
+	JWT is STATELESS. JWT is self-contained so there is no need of Session Storage on Server.
 		The token itself contains the information needed to identify and authenticate the user, along with a signature that allows the server to verify that the token hasn't been tampered with.
 	
 Traditionally Browser sent Username/Password to Server, Server created Sessions, Stores Session in DB. Browser stores Cookie: (SessionId). Every request will have this Cookie: (SessionId).
@@ -507,18 +507,18 @@ Refresh Token - Long lifetime (30 days).  -> Used to obtain new Access Tokens, W
 				};
 		});
 
-OAuth: Authorization   - OAuth is an authorization framework.  (Any Application needs access to Google Drive(any third application access),
+OAuth: Authorization  - OAuth is an authorization framework.  (Any Application needs access to Google Drive(any third application access),
 		We can not share our Google Password with the Application, Instead Google provides Access Token to the APP if User Allows.
-			(So that Application does not get to know the Password)). It does not have Identity or any information of the User only a token for access.
+			(So that Application does not get to know the Password). It does not have Identity or any information of the User only a token for access.
 
-OIDC: Authentication - OpenID Connect is an identity layer built on top of OAuth 2.0 that provides authentication. This includes the Identity of the User. Who is the User loggedIn.
+OIDC: Authentication - OpenID Connect is an identity layer built on top of OAuth 2.0 that provides authentication. This includes the Identity of the User. Who is the User logged In.
 
 OAuth Authorization Code Flow - User Clicks Login with Google -> Redirect: Client > Google Login -> User Authenticates -> Google Asks Allow App to access profile -> User Approves -> Google return Authorization Code (Access Token) -> Client exchanges code for Access Tokens -> Client has Access to Google APIs.
 OAuth only provides access token to the application. A way to get permission to access somebody else's resources without knowing their password.
 
 OAuth Scopes - Scopes Limit Permissions (read_profile, read_email, read_drive). OAuth Scopes are used to Grant minimum permissions (Only what is required).
 
-OIDC - Open ID Connect - This is an Identity Layer built on top of OAuth 2.0 that provides Authentication.  (OAuth + Identity Information)
+OIDC - Open ID Connect - This is an Identity Layer built on top of OAuth 2.0 that provides Authentication. (OAuth + Identity Information)
 
 Why OIDC ? - OAuth only tells What access is to be given to the Application. App does not know Who the User is ? OIDC solves this issue, It adds Identity with the Access Token.
  
@@ -543,13 +543,12 @@ Scenario 1 :- Traditional Login - Imagine If a website has its own LogIn. User e
 				If the User is already logged in using Applications LogIn, Googles ID Token is of no Use and not required at all.
 Scenario 2 :- Login Using Google, etc.. - Website does not has it's own Login Functionality. It TRUSTS GOOGLE. Application May or May not have seen User before.
 				User Clicks Continue with Google, Google handles Username, Password, MFA, Security checks and Validates the User. After Successful Login to Google, Google 					sends ID Token to the Application.
-				Now Application knows User is John.
-				Google is the 'Identity Provider'.
-				The application didn't authenticate the user. Google did. The application is trusting Google's authentication.
+				Now Application knows User is John.  Google is the 'Identity Provider'.
+					The application didn't authenticate the user. Google did. Application is trusting Google's authentication.
 	*Scenario 2 is essentially what 'OIDC' provides. 	OIDC is primarily useful: at login time to establish identity.
 
-Scenario 3 :-	If the Website/Application needs to access Google Photos/Drive, Application would need access/permission to Google Photos/Drive APIs.
-				User --> Approves access via Google  --> Google Issues Access Token --> Application receives and It can now call Google Drive API/Google Photos API
+Scenario 3 :- If the Website/Application needs to access Google Photos/Drive, Application would need access/permission to Google Photos/Drive APIs.
+				User --> Approves access via Google --> Google Issues Access Token --> Application receives and It can now call Google Drive API/Google Photos API
 		Authorization - OAuth
 
 Now in recent times, whenever we use Continue with Google, Google validates and sends both ID Token + Access Token. So basically we use OIDC everywhere, which is internally built on top of OAuth.
