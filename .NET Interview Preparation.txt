@@ -411,7 +411,32 @@ CQRS :- Command Query Responsibility Segregation
 Application layer - It has the Folders of Commands, Queries and Handlers.
 	Commands - modify state,  (WRITE)
 	Queries - fetches the relevant data  (READ)
+
+	Mediator - Routes requests to their respective handlers
+	MediatR  - C# library implementing the mediator pattern
+
 Using MediatR, We can keep Handlers separate and single responsibility.
+
+	MediatR library with the CQRS (Command Query Responsibility Segregation) pattern.
+
+		Without MediatR:			var result = await _streakService.GetSummary(userId);
+		With MediatR:				var result = await _mediator.Send(new GetStreakSummaryQuery(GetUserId()));
+			// Now, the controller doesn't need to know which service or class performs the actual work.	The mediator finds the appropriate handler and sends the request to it.
+			// MediatR - Finds the matching request handler
+	
+	Controller (calls Mediator.Send())  ➜  Mediator (finds matching req handler)  ➜  GetStreakSummaryQueryHandler (business logic)  ➜  Repository  ➜ Result returned to Controller
+	
+	Steps followed :- 1. Create a Query (GetStreakSummaryQuery)		// public class GetStreakSummaryQuery : IRequest<StreakSummaryDto>    -- query expects a StreakSummaryDto response.
+								-- This query class simply carries the data needed for executing the req.
+
+						public record GetStreakSummaryQuery(Guid UserId) : IRequest<Result<List<TaskStreakSummaryDto>>>;
+					  
+					  2. Create the Query Handler  (GetStreakSummaryQueryHandler)		-- This is where exactly everything happens.
+								-- Handle() is the most important method.  MediatR automatically calls this method when you send the matching query.
+					
+					  3. Call the Query from the Controller		-- await _mediator.Send(new GetStreakSummaryQuery(GetUserId()));
+	
+	Internally MediatR :- Receives GetStreakSummaryQuery  ➜  Identifies the handler  ➜  Resolves handler using DI  ➜  Calls handle() ➜  Waits for result and retunrs it back to Controller.
 
 REST API - Restful APIs - Representational STATE Transfer Application Programming Interface
 		CSSUCL
